@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>automatizame_uy | Ingeniería de Sistemas para el Éxito Digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00ffcc",
+                        "accent": "#ff3366",
+                        "background-dark": "#0f172a", // Softer dark slate
+                        "surface": "#1e293b", // Lighter surface for contrast
+                        "nebula": "#16213e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    letterSpacing: {
+                        "tighter-extra": "-0.01em",
+                        "tight-process": "-0.02em"
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--noise);
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .text-reveal {
+            animation: reveal 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .nebula-glow {
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
+            transition: all 0.4s ease;
+        }
+
+        .nebula-glow:hover {
+            box-shadow: 0 0 50px rgba(0, 255, 204, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .glass-panel {
+            background: rgba(13, 17, 23, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+        }
+
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(var(--background-dark), var(--background-dark)) padding-box,
+                linear-gradient(45deg, #00ffcc, #ff3366) border-box;
+            border: 1px solid transparent;
+        }
+
+        body {
+            min-height: max(884px, 100dvh);
+            scroll-behavior: smooth;
+        }
+
+        .material-symbols-outlined {
+            font-variant-ligatures: none;
+            display: inline-block;
+            line-height: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-background-dark font-body text-slate-300 selection:bg-primary selection:text-black">
+    <header
+        class="fixed top-0 w-full z-50 py-6 px-8 transition-all duration-500 hover:bg-background-dark/80 hover:backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4 group">
+                <div
+                    class="size-12 bg-primary flex items-center justify-center rotate-45 group-hover:rotate-180 transition-transform duration-700">
+                    <span
+                        class="material-symbols-outlined text-background-dark -rotate-45 group-hover:rotate-180 transition-transform duration-700"
+                        style="font-size: 24px; font-variation-settings: 'FILL' 1;">bolt</span>
+                </div>
+                <h2 class="font-display font-extrabold text-2xl tracking-tighter-extra text-white">automatizame.<span
+                        class="text-primary italic">uy</span></h2>
+            </div>
+
+            <nav class="hidden lg:flex gap-12 font-display text-xs uppercase tracking-[0.3em] font-bold">
+                <a href="#servicios"
+                    class="text-slate-400 hover:text-primary transition-colors py-2 relative group overflow-hidden">
+                    <span class="block group-hover:-translate-y-full transition-transform duration-300">Servicios</span>
+                    <span
+                        class="absolute top-full left-0 text-primary transition-transform duration-300 group-hover:-translate-y-full">Servicios</span>
+                </a>
+                <a href="#proceso"
+                    class="text-slate-400 hover:text-primary transition-colors py-2 relative group overflow-hidden">
+                    <span class="block group-hover:-translate-y-full transition-transform duration-300">Cómo
+                        Trabajamos</span>
+                    <span
+                        class="absolute top-full left-0 text-primary transition-transform duration-300 group-hover:-translate-y-full">Cómo
+                        Trabajamos</span>
+                </a>
+                <a href="#contacto"
+                    class="text-slate-400 hover:text-primary transition-colors py-2 relative group overflow-hidden">
+                    <span class="block group-hover:-translate-y-full transition-transform duration-300">Contacto</span>
+                    <span
+                        class="absolute top-full left-0 text-primary transition-transform duration-300 group-hover:-translate-y-full">Contacto</span>
+                </a>
+            </nav>
+
+            <button
+                class="gradient-border px-8 py-3 font-display text-[10px] font-black uppercase tracking-[0.2em] text-white hover:scale-105 active:scale-95 transition-all">
+                Diagnóstico Gratuito
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Intense Hero -->
+        <section class="min-h-screen flex items-center relative pt-32 pb-20 overflow-hidden">
+            <div class="absolute inset-0 z-0 pointer-events-none opacity-20">
+                <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent"></div>
+            </div>
+
+            <div class="max-w-screen-2xl mx-auto px-8 w-full relative z-10">
+                <div class="flex flex-col gap-12 max-w-5xl">
+                    <div class="flex items-center gap-4 text-reveal" style="animation-delay: 0.1s">
+                        <div class="h-px w-12 bg-primary"></div>
+                        <span class="font-display text-xs font-bold tracking-[0.2em] text-primary uppercase">Soluciones
+                            para Pequeñas Empresas</span>
+                    </div>
+
+                    <h1 class="font-display font-extrabold text-5xl md:text-7xl leading-tight tracking-tight text-white text-reveal"
+                        style="animation-delay: 0.3s">
+                        Automatiza tus tareas,<br />
+                        <span class="text-primary">Ahorra tiempo</span> y crece.
+                    </h1>
+
+                    <div class="grid md:grid-cols-2 gap-12 items-end text-reveal" style="animation-delay: 0.5s">
+                        <p class="text-lg text-slate-300 leading-relaxed font-light">
+                            Te ayudamos a eliminar el trabajo manual repetitivo para que puedas <span
+                                class="text-white font-medium">enfocarte en vender y crecer</span>. Simple, rápido y a
+                            tu medida.
+                        </p>
+
+                        <div class="flex flex-wrap gap-6">
+                            <a href="#contacto"
+                                class="nebula-glow bg-primary text-background-dark font-display font-bold text-sm uppercase px-8 py-4 rounded-md flex items-center gap-3">
+                                Agenda una Asesoría Gratuita
+                                <span
+                                    class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Stats Removed to simplify -->
+                <!-- Social Proof Marquee -->
+                <div class="mt-20 border-y border-white/5 py-8 overflow-hidden bg-background-dark/50">
+                    <div class="flex animate-marquee whitespace-nowrap gap-16 items-center">
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MENOS
+                            ERRORES</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MÁS TIEMPO
+                            LIBRE</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">AUMENTO DE
+                            VENTAS</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">ATENCIÓN
+                            MÁS RÁPIDA</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                        <!-- Duplicate for infinite loop -->
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MENOS
+                            ERRORES</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MÁS TIEMPO
+                            LIBRE</span>
+                        <span class="size-2 bg-primary/50 rounded-full"></span>
+                    </div>
+                </div>
+        </section>
+
+        <!-- Dynamic Grid Section -->
+        <section class="py-48 bg-surface relative" id="servicios">
+            <div class="max-w-screen-2xl mx-auto px-8">
+                <div class="grid lg:grid-cols-12 gap-12 items-start mb-24">
+                    <div class="lg:col-span-12">
+                        <h2 class="font-display font-extrabold text-4xl md:text-6xl text-white tracking-tight">
+                            Soluciones a Medida.<br />Crecimiento <span class="text-primary italic">Real.</span>
+                        </h2>
+                        <div class="mt-8 max-w-2xl border-l border-primary/30 pl-8 py-2">
+                            <p class="text-slate-400">
+                                No te vendemos sistemas complicados que no vas a usar. Diseñamos herramientas prácticas
+                                que
+                                resuelven los problemas diarios de tu empresa.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-1">
+                    <!-- Service 1 -->
+                    <div
+                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500">
+                        <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-10 dark-glow transition-opacity pointer-events-none"
+                            style="filter: blur(80px)"></div>
+                        <div class="space-y-6 relative z-10">
+                            <div
+                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
+                                <span class="material-symbols-outlined text-3xl">autorenew</span>
+                            </div>
+                            <h3 class="font-display font-bold text-2xl text-white">Automatización<br />de Tareas</h3>
+                            <p
+                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
+                                Deja que la tecnología se encargue del envío de correos, facturación y la carga de datos
+                                manual. Más tiempo para ti y tu equipo.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Service 2 -->
+                    <div
+                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500">
+                        <div class="space-y-6 relative z-10">
+                            <div
+                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
+                                <span class="material-symbols-outlined text-3xl">contact_page</span>
+                            </div>
+                            <h3 class="font-display font-bold text-2xl text-white">Desarrollo de<br />CRM a Medida</h3>
+                            <p
+                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
+                                Olvídate de los excels desordenados o sistemas caros que no encajan. Creamos un gestor
+                                de clientes exactamente como tu negocio lo necesita.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Service 3 -->
+                    <div
+                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500 lg:col-span-1 md:col-span-2">
+                        <div class="space-y-6 relative z-10">
+                            <div
+                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
+                                <span class="material-symbols-outlined text-3xl">smart_toy</span>
+                            </div>
+                            <h3 class="font-display font-bold text-2xl text-white">Atención al<br />Cliente con IA</h3>
+                            <p
+                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
+                                Responde a tus clientes 24/7 en WhatsApp o tu web. Un asistente inteligente que agenda
+                                citas, responde dudas y nunca duerme.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Editorial Process Section -->
+        <section class="py-32 relative" id="proceso">
+            <div class="max-w-screen-2xl mx-auto px-8">
+                <div class="flex items-center gap-6 mb-32 overflow-hidden">
+                    <span
+                        class="font-display font-black text-6xl md:text-8xl text-white/5 leading-none tracking-tight-process">NUESTRO
+                        ENFOQUE</span>
+                    <div class="h-px grow bg-white/5"></div>
+                    <h2 class="font-display font-bold text-sm text-primary whitespace-nowrap tracking-widest uppercase">
+                        Tres Pasos Simples</h2>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-24">
+                    <div class="space-y-8 group">
+                        <div
+                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
+                            01</div>
+                        <h4 class="font-display font-bold text-2xl text-white">Entender tu Negocio</h4>
+                        <p class="text-slate-400 leading-relaxed font-light">
+                            Nos reunimos para descubrir en qué tareas pierdes más tiempo. Analizamos tus procesos
+                            actuales antes de sugerir cualquier herramienta tecnológica.
+                        </p>
+                    </div>
+                    <div class="space-y-8 group mt-12 lg:mt-24">
+                        <div
+                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
+                            02</div>
+                        <h4 class="font-display font-bold text-2xl text-white">Diseñar la Solución</h4>
+                        <p class="text-slate-400 leading-relaxed font-light">
+                            Construimos únicamente lo que necesitas. Ya sea un chatbot para WhatsApp o un CRM
+                            personalizado, lo hacemos a la medida exacta de tu equipo.
+                        </p>
+                    </div>
+                    <div class="space-y-8 group mt-12 lg:mt-48">
+                        <div
+                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
+                            03</div>
+                        <h4 class="font-display font-bold text-2xl text-white">Implementar y Acompañar</h4>
+                        <p class="text-slate-400 leading-relaxed font-light">
+                            Ponemos el sistema en marcha asegurándonos de que sea fácil de usar para todos. Te damos
+                            soporte continuo para que le saques el máximo provecho.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Results Section -->
+        <section class="py-32 bg-surface">
+            <div class="max-w-screen-2xl mx-auto px-8">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                    <h2 class="font-display font-bold text-4xl md:text-5xl text-white tracking-tight">Cambios que se
+                        <span class="text-primary">notan.</span>
+                    </h2>
+                    <p class="text-slate-500 text-xs font-bold tracking-widest uppercase pb-2">Casos Reales</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <div
+                        class="border border-white/5 p-12 space-y-8 hover:bg-background-dark transition-colors relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-8">
+                            <span
+                                class="material-symbols-outlined text-primary/10 group-hover:text-primary/30 text-8xl transition-colors">format_quote</span>
+                        </div>
+                        <p class="text-xl text-white leading-relaxed font-light italic">
+                            "Antes perdíamos horas pasando datos de Excel a facturas. Con el nuevo CRM a medida, todo
+                            está conectado y mi equipo ahora tiene tiempo para conseguir más clientes."
+                        </p>
+                        <div class="flex items-center gap-6">
+                            <div
+                                class="size-12 bg-slate-800 rounded-full flex items-center justify-center font-display font-bold text-xs">
+                                CM</div>
+                            <div>
+                                <h4 class="font-display font-bold text-sm text-white uppercase tracking-widest">
+                                    Clínica Médica</h4>
+                                <p class="text-xs text-primary uppercase mt-1">Gestión de Pacientes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="border border-white/5 p-12 space-y-8 hover:bg-background-dark transition-colors relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-8">
+                            <span
+                                class="material-symbols-outlined text-primary/10 group-hover:text-primary/30 text-8xl transition-colors">format_quote</span>
+                        </div>
+                        <p class="text-xl text-white leading-relaxed font-light italic">
+                            "El agente de IA en nuestro WhatsApp cambió el juego. Ahora respondemos dudas frecuentes
+                            hasta de madrugada y hemos duplicado la cantidad de pedidos agendados."
+                        </p>
+                        <div class="flex items-center gap-6">
+                            <div
+                                class="size-12 bg-slate-800 rounded-full flex items-center justify-center font-display font-bold text-xs">
+                                EM</div>
+                            <div>
+                                <h4 class="font-display font-bold text-sm text-white uppercase tracking-widest">Tienda
+                                    de Ecommerce</h4>
+                                <p class="text-xs text-primary uppercase mt-1">Atención al Cliente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- High-Impact Contact Console -->
+        <section class="py-32 bg-background-dark relative" id="contacto">
+            <div class="max-w-screen-2xl mx-auto px-8 relative">
+                <div class="absolute inset-0 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+                <div class="grid lg:grid-cols-2 gap-24 items-center">
+                    <div>
+                        <h3 class="font-display font-bold text-4xl md:text-5xl text-white mb-6 leading-tight">
+                            ¿Listo para crecer sin trabajar <span class="text-primary">más horas?</span></h3>
+                        <p class="text-slate-400 text-lg mb-12 font-light">
+                            Completa el formulario y conversemos sobre qué tareas repetitivas te están robando energía
+                            hoy.
+                        </p>
+
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-6 group">
+                                <div
+                                    class="size-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm">alternate_email</span>
+                                </div>
+                                <span
+                                    class="text-sm font-display text-slate-400 group-hover:text-white transition-colors">contacto@automatizame.uy</span>
+                            </div>
+                            <div class="flex items-center gap-6 group">
+                                <div
+                                    class="size-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-primary transition-colors">
+                                    <span class="material-symbols-outlined text-sm">location_on</span>
+                                </div>
+                                <span
+                                    class="text-sm font-display text-slate-400 group-hover:text-white transition-colors">Montevideo,
+                                    Uruguay | Trabajamos remoto.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gradient-border p-px rounded-xl overflow-hidden shadow-2xl">
+                        <div class="bg-surface p-8 md:p-12 relative">
+                            <h4 class="text-white font-display font-bold text-xl mb-8">Cuéntanos sobre tu negocio</h4>
+                            <form class="space-y-8"
+                                onsubmit="event.preventDefault(); alert('¡Gracias! Serás redirigido para agendar el día y hora de tu reunión.');">
+
+                                <!-- Campos 1 y 2 en Grid -->
+                                <div class="grid md:grid-cols-2 gap-8">
+                                    <div class="relative group">
+                                        <input type="text"
+                                            class="peer w-full bg-transparent border-b border-white/20 py-2 focus:border-primary outline-none transition-colors text-white font-display text-sm tracking-wide placeholder:text-transparent"
+                                            id="name" placeholder="Nombre y Apellido" required>
+                                        <label for="name"
+                                            class="absolute left-0 -top-3 text-xs font-medium text-slate-500 peer-focus:text-primary peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 transition-all pointer-events-none">Nombre
+                                            y Apellido *</label>
+                                    </div>
+                                    <div class="relative group">
+                                        <input type="text"
+                                            class="peer w-full bg-transparent border-b border-white/20 py-2 focus:border-primary outline-none transition-colors text-white font-display text-sm tracking-wide placeholder:text-transparent"
+                                            id="phone" placeholder="Teléfono" required>
+                                        <label for="phone"
+                                            class="absolute left-0 -top-3 text-xs font-medium text-slate-500 peer-focus:text-primary peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 transition-all pointer-events-none">Teléfono
+                                            (WhatsApp) *</label>
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="relative group">
+                                    <input type="email"
+                                        class="peer w-full bg-transparent border-b border-white/20 py-2 focus:border-primary outline-none transition-colors text-white font-display text-sm tracking-wide placeholder:text-transparent"
+                                        id="email" placeholder="Email" required>
+                                    <label for="email"
+                                        class="absolute left-0 -top-3 text-xs font-medium text-slate-500 peer-focus:text-primary peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 transition-all pointer-events-none">Correo
+                                        Electrónico *</label>
+                                </div>
+
+                                <!-- Actividad -->
+                                <div class="relative group">
+                                    <input type="text"
+                                        class="peer w-full bg-transparent border-b border-white/20 py-2 focus:border-primary outline-none transition-colors text-white font-display text-sm tracking-wide placeholder:text-transparent"
+                                        id="activity" placeholder="Actividad" required>
+                                    <label for="activity"
+                                        class="absolute left-0 -top-3 text-xs font-medium text-slate-500 peer-focus:text-primary peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 transition-all pointer-events-none">¿A
+                                        qué se dedica tu empresa?</label>
+                                </div>
+
+                                <!-- Dolor Principal -->
+                                <div class="relative group">
+                                    <textarea
+                                        class="peer w-full bg-transparent border-b border-white/20 py-2 focus:border-primary outline-none transition-colors text-white font-display text-sm tracking-wide placeholder:text-transparent min-h-[100px] resize-none"
+                                        id="pain_point" placeholder="¿Qué quieres mejorar?" required></textarea>
+                                    <label for="pain_point"
+                                        class="absolute left-0 -top-3 text-xs font-medium text-slate-500 peer-focus:text-primary peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 transition-all pointer-events-none">¿Qué
+                                        te gustaría automatizar o mejorar en tu empresa? *</label>
+                                </div>
+
+                                <button type="submit"
+                                    class="w-full bg-primary text-background-dark py-4 rounded-md font-display font-bold text-sm uppercase tracking-wide hover:brightness-110 transition-all duration-300">
+                                    Agendar Reunión (30-45 min)
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="py-24 border-t border-white/5 bg-background-dark relative overflow-hidden">
+        <div class="max-w-screen-2xl mx-auto px-8 relative z-10">
+            <div class="grid lg:grid-cols-12 gap-16 mb-24">
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="flex items-center gap-4 group">
+                        <div
+                            class="size-10 bg-primary flex items-center justify-center rotate-45 group-hover:rotate-180 transition-transform duration-700">
+                            <span
+                                class="material-symbols-outlined text-background-dark -rotate-45 group-hover:rotate-180 transition-transform duration-700"
+                                style="font-size: 20px; font-variation-settings: 'FILL' 1;">bolt</span>
+                        </div>
+                        <h2 class="font-display font-extrabold text-xl tracking-tighter-extra text-white">
+                            automatizame.<span class="text-primary italic">uy</span></h2>
+                    </div>
+                    <p class="text-slate-500 font-light leading-relaxed">
+                        Soluciones tecnológicas a medida para empresas que buscan ahorrar tiempo, automatizar procesos y
+                        crecer sin perder el control.
+                    </p>
+                </div>
+                <div class="lg:col-span-2 lg:col-start-6 space-y-6">
+                    <h5 class="text-white font-display font-black text-xs uppercase tracking-[0.2em] mb-8">Navegación
+                    </h5>
+                    <ul class="space-y-4">
+                        <li><a href="#servicios"
+                                class="text-slate-500 hover:text-primary transition-colors text-sm font-bold">Servicios</a>
+                        </li>
+                        <li><a href="#proceso"
+                                class="text-slate-500 hover:text-primary transition-colors text-sm font-bold">Cómo
+                                Trabajamos</a>
+                        </li>
+                        <li><a href="#contacto"
+                                class="text-slate-500 hover:text-primary transition-colors text-sm font-bold">Contacto</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-2 space-y-6">
+                    <h5 class="text-white font-display font-black text-xs uppercase tracking-[0.2em] mb-8">Legal</h5>
+                    <ul class="space-y-4">
+                        <li><a href="#"
+                                class="text-slate-500 hover:text-primary transition-colors text-sm font-bold">Privacidad</a>
+                        </li>
+                        <li><a href="#"
+                                class="text-slate-500 hover:text-primary transition-colors text-sm font-bold">Términos</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 pt-12 border-t border-white/5">
+                <p class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.4em]">
+                    © 2024 AUTOMATIZAME_UY. SYSTEM_STATUS: <span class="text-primary animate-pulse">ONLINE</span>
+                </p>
+                <div class="flex gap-10">
+                    <a href="#" class="text-slate-600 hover:text-white transition-colors"><span
+                            class="material-symbols-outlined text-lg">public</span></a>
+                    <a href="#" class="text-slate-600 hover:text-white transition-colors"><span
+                            class="material-symbols-outlined text-lg">data_object</span></a>
+                    <a href="#" class="text-slate-600 hover:text-white transition-colors"><span
+                            class="material-symbols-outlined text-lg">share</span></a>
+                </div>
+            </div>
+        </div>
+        <!-- Decorative noise overlay for footer -->
+        <div class="absolute inset-0 bg-primary/5 opacity-10 pointer-events-none" style="filter: blur(120px)"></div>
+    </footer>
+    <div class="fixed bottom-10 right-10 z-[100] flex flex-col gap-6 items-end">
+        <!-- AI Chat Button -->
+        <button onclick="alert('Iniciando Protocolo de Asistencia IA...')"
+            class="group relative flex items-center justify-center size-16 rounded-full bg-slate-900 border border-white/10 shadow-2xl hover:border-primary transition-all duration-500 overflow-hidden">
+            <span
+                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">bolt</span>
+            <span
+                class="absolute right-full mr-6 px-4 py-2 bg-white text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">AGENTE_IA</span>
+        </button>
+        <!-- WhatsApp Button -->
+        <a href="https://wa.me/59899000000" target="_blank"
+            class="block group relative flex items-center justify-center size-16 rounded-full bg-slate-900 border border-white/10 shadow-2xl hover:border-primary transition-all duration-500 overflow-hidden">
+            <span
+                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">chat_bubble</span>
+            <span
+                class="absolute right-full mr-6 px-4 py-2 bg-primary text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">WHATSAPP</span>
+        </a>
+    </div>
+</body>
+
+</html>
