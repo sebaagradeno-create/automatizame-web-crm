@@ -8,10 +8,10 @@
     <title>automatizame_uy | Ingeniería de Sistemas para el Éxito Digital</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@100;300;400;700;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -20,17 +20,12 @@
                     colors: {
                         "primary": "#00ffcc",
                         "accent": "#ff3366",
-                        "background-dark": "#0f172a", // Softer dark slate
-                        "surface": "#1e293b", // Lighter surface for contrast
-                        "nebula": "#16213e",
+                        "background-dark": "#050505",
+                        "surface": "#0a0a0a",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"],
-                        "body": ["Inter", "sans-serif"]
-                    },
-                    letterSpacing: {
-                        "tighter-extra": "-0.01em",
-                        "tight-process": "-0.02em"
+                        "display": ["Outfit", "sans-serif"],
+                        "body": ["Space Grotesk", "sans-serif"]
                     }
                 },
             },
@@ -55,16 +50,77 @@
         }
 
         .text-reveal {
-            animation: reveal 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px) scale(0.98);
+            filter: blur(10px);
         }
 
         @keyframes reveal {
             to {
                 opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .nebula-vibe {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 255, 204, 0.08) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(0, 255, 204, 0.3);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 204, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 30%, #00ffcc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .staggered-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .staggered-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+
+            0%,
+            100% {
                 transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
             }
         }
 
@@ -125,9 +181,10 @@
             <div class="flex items-center gap-4 group">
                 <div
                     class="size-12 bg-primary flex items-center justify-center rotate-45 group-hover:rotate-180 transition-transform duration-700">
+                    <!-- Placeholder para futuro logo: <img src="logo.png" class="-rotate-45 size-8"> -->
                     <span
                         class="material-symbols-outlined text-background-dark -rotate-45 group-hover:rotate-180 transition-transform duration-700"
-                        style="font-size: 24px; font-variation-settings: 'FILL' 1;">bolt</span>
+                        style="font-size: 24px; font-variation-settings: 'FILL' 1;">memory</span>
                 </div>
                 <h2 class="font-display font-extrabold text-2xl tracking-tighter-extra text-white">automatizame.<span
                         class="text-primary italic">uy</span></h2>
@@ -163,188 +220,137 @@
         </div>
     </header>
 
-    <main>
-        <!-- Intense Hero -->
-        <section class="min-h-screen flex items-center relative pt-32 pb-20 overflow-hidden">
-            <div class="absolute inset-0 z-0 pointer-events-none opacity-20">
-                <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent"></div>
-            </div>
+    <main class="relative overflow-hidden">
+        <div class="nebula-vibe top-[-10%] left-[-10%]"></div>
+        <div class="nebula-vibe bottom-[-10%] right-[-10%]"
+            style="background: radial-gradient(circle, rgba(255, 51, 102, 0.05) 0%, transparent 70%);"></div>
 
-            <div class="max-w-screen-2xl mx-auto px-8 w-full relative z-10">
-                <div class="flex flex-col gap-12 max-w-5xl">
-                    <div class="flex items-center gap-4 text-reveal" style="animation-delay: 0.1s">
-                        <div class="h-px w-12 bg-primary"></div>
-                        <span class="font-display text-xs font-bold tracking-[0.2em] text-primary uppercase">Soluciones
-                            para Pequeñas Empresas</span>
-                    </div>
-
-                    <h1 class="font-display font-extrabold text-5xl md:text-7xl leading-tight tracking-tight text-white text-reveal"
-                        style="animation-delay: 0.3s">
-                        Automatiza tus tareas,<br />
-                        <span class="text-primary">Ahorra tiempo</span> y crece.
-                    </h1>
-
-                    <div class="grid md:grid-cols-2 gap-12 items-end text-reveal" style="animation-delay: 0.5s">
-                        <p class="text-lg text-slate-300 leading-relaxed font-light">
-                            Te ayudamos a eliminar el trabajo manual repetitivo para que puedas <span
-                                class="text-white font-medium">enfocarte en vender y crecer</span>. Simple, rápido y a
-                            tu medida.
+        <!-- Hero Section con espaciado ajustado -->
+        <section class="min-h-[80dvh] flex items-center relative pt-24 pb-12">
+            <div class="max-w-screen-2xl mx-auto px-8 w-full">
+                <div class="grid lg:grid-cols-2 items-center gap-8">
+                    <div class="space-y-6">
+                        <span
+                            class="font-display text-primary tracking-[0.4em] font-black text-[10px] uppercase block">Automatización
+                            Evolutiva</span>
+                        <h1
+                            class="font-display font-black text-5xl md:text-7xl leading-tight text-white staggered-reveal">
+                            MENOS <span class="gradient-text italic">RUTINA</span>.<br>MÁS <span
+                                class="text-primary underline decoration-accent/30 decoration-4">SISTEMAS</span>.
+                        </h1>
+                        <p class="text-lg text-slate-400 max-w-lg font-light leading-relaxed staggered-reveal"
+                            style="transition-delay: 0.2s">
+                            No somos una agencia más. Construimos infraestructuras inteligentes que trabajan mientras
+                            duermes. El futuro es autónomo.
                         </p>
-
-                        <div class="flex flex-wrap gap-6">
+                        <div class="flex gap-6 staggered-reveal" style="transition-delay: 0.4s">
                             <a href="#contacto"
-                                class="nebula-glow bg-primary text-background-dark font-display font-bold text-sm uppercase px-8 py-4 rounded-md flex items-center gap-3">
-                                Agenda una Asesoría Gratuita
-                                <span
-                                    class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+                                class="bg-primary hover:bg-white text-black font-display font-black text-xs uppercase px-8 py-4 rounded-full transition-all duration-300">
+                                Iniciar Transformación
                             </a>
                         </div>
                     </div>
                 </div>
-
-                <!-- Floating Stats Removed to simplify -->
-                <!-- Social Proof Marquee -->
-                <div class="mt-20 border-y border-white/5 py-8 overflow-hidden bg-background-dark/50">
-                    <div class="flex animate-marquee whitespace-nowrap gap-16 items-center">
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MENOS
-                            ERRORES</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MÁS TIEMPO
-                            LIBRE</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">AUMENTO DE
-                            VENTAS</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">ATENCIÓN
-                            MÁS RÁPIDA</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                        <!-- Duplicate for infinite loop -->
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MENOS
-                            ERRORES</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                        <span class="font-display font-bold text-sm text-slate-500 uppercase tracking-widest">MÁS TIEMPO
-                            LIBRE</span>
-                        <span class="size-2 bg-primary/50 rounded-full"></span>
-                    </div>
-                </div>
+            </div>
         </section>
 
-        <!-- Dynamic Grid Section -->
-        <section class="py-48 bg-surface relative" id="servicios">
+        <!-- Servicios: Reducido espaciado y tamaño -->
+        <section class="py-24 relative overflow-hidden" id="servicios">
             <div class="max-w-screen-2xl mx-auto px-8">
-                <div class="grid lg:grid-cols-12 gap-12 items-start mb-24">
-                    <div class="lg:col-span-12">
-                        <h2 class="font-display font-extrabold text-4xl md:text-6xl text-white tracking-tight">
-                            Soluciones a Medida.<br />Crecimiento <span class="text-primary italic">Real.</span>
-                        </h2>
-                        <div class="mt-8 max-w-2xl border-l border-primary/30 pl-8 py-2">
-                            <p class="text-slate-400">
-                                No te vendemos sistemas complicados que no vas a usar. Diseñamos herramientas prácticas
-                                que
-                                resuelven los problemas diarios de tu empresa.
-                            </p>
-                        </div>
-                    </div>
+                <div class="mb-16">
+                    <h2 class="font-display font-black text-4xl md:text-5xl text-white tracking-tighter">
+                        INGENIERÍA CON <span class="text-primary italic">ACTITUD.</span>
+                    </h2>
                 </div>
 
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-1">
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Service 1 -->
                     <div
-                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500">
-                        <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-10 dark-glow transition-opacity pointer-events-none"
-                            style="filter: blur(80px)"></div>
-                        <div class="space-y-6 relative z-10">
-                            <div
-                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
-                                <span class="material-symbols-outlined text-3xl">autorenew</span>
-                            </div>
-                            <h3 class="font-display font-bold text-2xl text-white">Automatización<br />de Tareas</h3>
-                            <p
-                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
-                                Deja que la tecnología se encargue del envío de correos, facturación y la carga de datos
-                                manual. Más tiempo para ti y tu equipo.
-                            </p>
+                        class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden">
+                        <span
+                            class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">01</span>
+                        <div class="space-y-4 relative">
+                            <h3 class="font-display font-black text-xl text-white italic">Flujos en<br>Piloto Automático
+                            </h3>
+                            <p class="text-slate-500 text-xs leading-relaxed">Liberamos tus manos. Automatización
+                                profunda de procesos repetitivos.</p>
                         </div>
+                        <span class="material-symbols-outlined text-primary text-3xl">sync_alt</span>
                     </div>
 
                     <!-- Service 2 -->
-                    <div
-                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500">
-                        <div class="space-y-6 relative z-10">
-                            <div
-                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
-                                <span class="material-symbols-outlined text-3xl">contact_page</span>
-                            </div>
-                            <h3 class="font-display font-bold text-2xl text-white">Desarrollo de<br />CRM a Medida</h3>
-                            <p
-                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
-                                Olvídate de los excels desordenados o sistemas caros que no encajan. Creamos un gestor
-                                de clientes exactamente como tu negocio lo necesita.
-                            </p>
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden"
+                        style="animation-delay: 1s">
+                        <span
+                            class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">02</span>
+                        <div class="space-y-4 relative">
+                            <h3 class="font-display font-black text-xl text-white italic">CRM<br>Arquitectónico</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed">Tu base de datos, tu activo más valioso,
+                                gestionado sin errores.</p>
                         </div>
+                        <span class="material-symbols-outlined text-primary text-3xl">database</span>
                     </div>
 
                     <!-- Service 3 -->
-                    <div
-                        class="group relative aspect-square bg-background-dark p-12 flex flex-col justify-between overflow-hidden border border-white/5 hover:z-10 hover:border-primary/50 transition-all duration-500 lg:col-span-1 md:col-span-2">
-                        <div class="space-y-6 relative z-10">
-                            <div
-                                class="size-16 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
-                                <span class="material-symbols-outlined text-3xl">smart_toy</span>
-                            </div>
-                            <h3 class="font-display font-bold text-2xl text-white">Atención al<br />Cliente con IA</h3>
-                            <p
-                                class="text-slate-400 text-sm leading-relaxed max-w-xs group-hover:text-slate-300 transition-colors">
-                                Responde a tus clientes 24/7 en WhatsApp o tu web. Un asistente inteligente que agenda
-                                citas, responde dudas y nunca duerme.
-                            </p>
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden"
+                        style="animation-delay: 2s">
+                        <span
+                            class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">03</span>
+                        <div class="space-y-4 relative">
+                            <h3 class="font-display font-black text-xl text-white italic">Soporte<br>Neuronal</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed">IA que no solo responde, resuelve.
+                                Atención 24/7 sin humanos.</p>
                         </div>
+                        <span class="material-symbols-outlined text-primary text-3xl">neurology</span>
+                    </div>
+
+                    <!-- Service 4 -->
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating border-accent/20 relative overflow-hidden"
+                        style="animation-delay: 3.5s">
+                        <span
+                            class="text-accent/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">04</span>
+                        <div class="space-y-4 relative">
+                            <h3 class="font-display font-black text-xl text-white italic group-hover:text-accent">
+                                Contenido<br>Exponencial</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed">Domina las redes. Sistemas de contenido
+                                masivo con ADN de IA.</p>
+                        </div>
+                        <span class="material-symbols-outlined text-accent text-3xl">rocket_launch</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Editorial Process Section -->
-        <section class="py-32 relative" id="proceso">
+        <!-- Rediseño: Cómo Trabajamos actualizado al estilo Glass -->
+        <section class="py-24 relative" id="proceso">
             <div class="max-w-screen-2xl mx-auto px-8">
-                <div class="flex items-center gap-6 mb-32 overflow-hidden">
-                    <span
-                        class="font-display font-black text-6xl md:text-8xl text-white/5 leading-none tracking-tight-process">NUESTRO
-                        ENFOQUE</span>
-                    <div class="h-px grow bg-white/5"></div>
-                    <h2 class="font-display font-bold text-sm text-primary whitespace-nowrap tracking-widest uppercase">
-                        Tres Pasos Simples</h2>
+                <div class="flex items-center gap-4 mb-20">
+                    <h2
+                        class="font-display font-black text-4xl md:text-5xl text-white tracking-tighter uppercase italic">
+                        Nuestro Método</h2>
+                    <div class="h-px grow bg-gradient-to-r from-primary/30 to-transparent"></div>
                 </div>
 
-                <div class="grid lg:grid-cols-3 gap-24">
-                    <div class="space-y-8 group">
-                        <div
-                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
-                            01</div>
-                        <h4 class="font-display font-bold text-2xl text-white">Entender tu Negocio</h4>
-                        <p class="text-slate-400 leading-relaxed font-light">
-                            Nos reunimos para descubrir en qué tareas pierdes más tiempo. Analizamos tus procesos
-                            actuales antes de sugerir cualquier herramienta tecnológica.
+                <div class="grid lg:grid-cols-3 gap-12">
+                    <div class="glass-card p-10 space-y-6">
+                        <div class="font-display font-black text-4xl text-primary/30">I</div>
+                        <h4 class="font-display font-black text-xl text-white uppercase italic">Análisis Crítico</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed font-light">
+                            Identificamos los cuellos de botella en tu operación y analizamos a fondo tus procesos actuales para detectar fugas de tiempo y dinero.
                         </p>
                     </div>
-                    <div class="space-y-8 group mt-12 lg:mt-24">
-                        <div
-                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
-                            02</div>
-                        <h4 class="font-display font-bold text-2xl text-white">Diseñar la Solución</h4>
-                        <p class="text-slate-400 leading-relaxed font-light">
-                            Construimos únicamente lo que necesitas. Ya sea un chatbot para WhatsApp o un CRM
-                            personalizado, lo hacemos a la medida exacta de tu equipo.
+                    <div class="glass-card p-10 space-y-6 lg:mt-12">
+                        <div class="font-display font-black text-4xl text-primary/30">II</div>
+                        <h4 class="font-display font-black text-xl text-white uppercase italic">Arquitectura IA</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed font-light">
+                            Diseñamos una infraestructura inteligente que conecta tus herramientas. No instalamos parches; creamos sistemas robustos, nativos y escalables.
                         </p>
                     </div>
-                    <div class="space-y-8 group mt-12 lg:mt-48">
-                        <div
-                            class="font-display font-black text-6xl text-slate-800 group-hover:text-primary transition-colors duration-500">
-                            03</div>
-                        <h4 class="font-display font-bold text-2xl text-white">Implementar y Acompañar</h4>
-                        <p class="text-slate-400 leading-relaxed font-light">
-                            Ponemos el sistema en marcha asegurándonos de que sea fácil de usar para todos. Te damos
-                            soporte continuo para que le saques el máximo provecho.
+                    <div class="glass-card p-10 space-y-6 lg:mt-24">
+                        <div class="font-display font-black text-4xl text-primary/30">III</div>
+                        <h4 class="font-display font-black text-xl text-white uppercase italic">Redes con ADN de IA</h4>
+                        <p class="text-slate-400 text-sm leading-relaxed font-light">
+                            Implementamos sistemas de generación masiva potenciados por IA para dominar el algoritmo y lograr un alcance exponencial en tus plataformas.
                         </p>
                     </div>
                 </div>
@@ -519,7 +525,7 @@
                             class="size-10 bg-primary flex items-center justify-center rotate-45 group-hover:rotate-180 transition-transform duration-700">
                             <span
                                 class="material-symbols-outlined text-background-dark -rotate-45 group-hover:rotate-180 transition-transform duration-700"
-                                style="font-size: 20px; font-variation-settings: 'FILL' 1;">bolt</span>
+                                style="font-size: 20px; font-variation-settings: 'FILL' 1;">memory</span>
                         </div>
                         <h2 class="font-display font-extrabold text-xl tracking-tighter-extra text-white">
                             automatizame.<span class="text-primary italic">uy</span></h2>
@@ -580,19 +586,43 @@
         <button onclick="alert('Iniciando Protocolo de Asistencia IA...')"
             class="group relative flex items-center justify-center size-16 rounded-full bg-slate-900 border border-white/10 shadow-2xl hover:border-primary transition-all duration-500 overflow-hidden">
             <span
-                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">bolt</span>
+                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">terminal</span>
             <span
-                class="absolute right-full mr-6 px-4 py-2 bg-white text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">AGENTE_IA</span>
+                class="absolute right-full mr-6 px-4 py-2 bg-white text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">CONSULTA_IA</span>
         </button>
         <!-- WhatsApp Button -->
-        <a href="https://wa.me/59899000000" target="_blank"
+        <a href="https://wa.me/59899000000?text=Hola!%20Vi%20la%20web%20de%20Automatízame%20y%20me%20gustaría%20automatizar%20mi%20negocio."
+            target="_blank"
             class="block group relative flex items-center justify-center size-16 rounded-full bg-slate-900 border border-white/10 shadow-2xl hover:border-primary transition-all duration-500 overflow-hidden">
             <span
-                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">chat_bubble</span>
+                class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-3xl font-light">forum</span>
             <span
-                class="absolute right-full mr-6 px-4 py-2 bg-primary text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">WHATSAPP</span>
+                class="absolute right-full mr-6 px-4 py-2 bg-primary text-black text-[10px] font-display font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-y-1 transition-all pointer-events-none skew-x-[-12deg]">HABLAR(WSP)</span>
         </a>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth staggered reveal on scroll
+            const observerOptions = {
+                threshold: 0.15,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            // Apply reveal to sections and main cards
+            document.querySelectorAll('section, .group').forEach((el) => {
+                el.classList.add('staggered-reveal');
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 
 </html>
