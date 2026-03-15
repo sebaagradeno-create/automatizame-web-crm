@@ -1,0 +1,178 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook-leads-vps",
+        "options": {}
+      },
+      "id": "webhook-node-id",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "webhookId": "webhook-leads-vps"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "leads",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineAcrossColumns",
+          "value": {
+            "nombre": "={{ $json.body.nombre }}",
+            "telefono": "={{ $json.body.telefono }}",
+            "email": "={{ $json.body.email }}",
+            "dolor": "={{ $json.body.dolor }}"
+          },
+          "matchingColumns": []
+        }
+      },
+      "id": "postgres-node-id",
+      "name": "Postgres (Insert)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "=🔔 *¡NUEVO LEAD DETECTADO!*\n\n👤 *Nombre:* {{ $node[\"Webhook\"].json[\"body\"][\"nombre\"] }}\n📧 *Email:* {{ $node[\"Webhook\"].json[\"body\"][\"email\"] }}\n📞 *Tel:* {{ $node[\"Webhook\"].json[\"body\"][\"telefono\"] }}\n💬 *Dolor:* {{ $node[\"Webhook\"].json[\"body\"][\"dolor\"] }}\n\n⏳ _El analista IA está preparando la propuesta estratégica..._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram-node-id",
+      "name": "Aviso Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Actúa como el Socio Estratégico de Seba en \"Automatizame_uy\". Tu misión es transformar un simple 'dolor' en una oportunidad de negocio de alto valor.\n\nDATOS DEL CLIENTE:\n- Nombre: {{ $node[\"Webhook\"].json[\"body\"][\"nombre\"] }}\n- Contexto: {{ $node[\"Webhook\"].json[\"body\"][\"dolor\"] }}\n\nFILOSOFÍA DE LA AGENCIA:\n- No somos los más baratos, somos los mejores operativamente.\n- Resolvemos cuellos de botella mediante Ingeniería de Sistemas e IA.\n- Nuestras soluciones son premium pero accesibles para empresas que quieren escalar.\n\nTU ANÁLISIS ESTRATÉGICO DEBE INCLUIR:\n1. 🔍 ANATOMÍA DEL DOLOR: ¿Qué hay detrás de su queja? (Miedo, falta de tiempo, desorden).\n2. 💸 FUGA DE CAPITAL: Haz una estimación lógica de cuántas horas de trabajo o dólares están perdiendo al mes por no tener este sistema.\n3. 🏗️ SOLUCIÓN ARQUITECTÓNICA: Propón 2 soluciones específicas (una rápida de implementar y una robusta/premium).\n4. 🎯 EL GANCHO DE CIERRE: Redacta la pregunta exacta que Seba debe hacer en el Meet para que el cliente sienta que la única opción lógica es contratarlo ahora.\n\nResponde con un tono de 'Dossier de Inteligencia', profesional, directo y con autoridad.",
+        "options": {}
+      },
+      "id": "ai-agent-node-id",
+      "name": "AI Agent (Estratega)",
+      "type": "n8n-nodes-base.aiAgent",
+      "typeVersion": 1,
+      "position": [1060, 300]
+    },
+    {
+      "parameters": {
+        "model": "gemini-1.5-pro",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "gemini-model-id",
+      "name": "Google Gemini Chat Model",
+      "type": "n8n-nodes-base.googleGeminiChatModel",
+      "typeVersion": 1,
+      "position": [1080, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@automatizameuy.com",
+        "toEmail": "contacto@automatizameuy.com",
+        "subject": "=📋 ESTRATEGIA DE VENTA: {{ $node[\"Webhook\"].json[\"body\"][\"nombre\"] }}",
+        "text": "={{ $node[\"AI Agent (Estratega)\"].json[\"output\"] }}",
+        "options": {}
+      },
+      "id": "email-node-id",
+      "name": "Enviar Reporte (Email)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1300, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "respond-webhook-id",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1520, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Postgres (Insert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres (Insert)": {
+      "main": [
+        [
+          {
+            "node": "Aviso Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aviso Telegram": {
+      "main": [
+        [
+          {
+            "node": "AI Agent (Estratega)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent (Estratega)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reporte (Email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent (Estratega)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Reporte (Email)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
