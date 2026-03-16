@@ -4,7 +4,20 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "webhook-leads-vps",
-        "options": {}
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Accept"
+              }
+            ]
+          }
+        }
       },
       "id": "webhook-node-id",
       "name": "Webhook",

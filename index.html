@@ -638,14 +638,53 @@
                 observer.observe(el);
             });
 
-            // --- Lógica del Formulario con n8n (v2.1 - Conexión Forzada) ---
+            // --- Funciones Globales de Interacción ---
+            window.selectService = (serviceName) => {
+                const activityInput = document.getElementById('activity');
+                if (activityInput) {
+                    activityInput.value = serviceName;
+                    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+                    activityInput.style.color = '#00ffcc';
+                    setTimeout(() => activityInput.style.color = 'white', 1000);
+                }
+            };
+
+            window.openWhatsApp = (e) => {
+                if (e) e.preventDefault();
+                const activityInput = document.getElementById('activity');
+                const selectedService = (activityInput && activityInput.value) || "Consultoría General";
+                const message = encodeURIComponent(`Hola! Vi la web de Automatízame y me interesa el servicio de: ${selectedService}. ¿Podemos coordinar una breve charla?`);
+                window.open(`https://wa.me/59899385663?text=${message}`, '_blank');
+            };
+
+            window.openAIChat = () => {
+               const userName = prompt("Hola! Soy el asistente de Automatizame_uy. ¿Cómo te llamas?");
+               if(userName) {
+                   const userPain = prompt(`Un gusto, ${userName}. Cuéntame brevemente, ¿cuál es el proceso que más tiempo te quita hoy?`);
+                   if(userPain) {
+                       alert("Analizando tu respuesta con nuestra IA... En breve recibirás una propuesta estratégica. Te redirigimos al calendario de Seba para profundizar.");
+                       fetch('https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps', {
+                           method: 'POST',
+                           headers: {'Content-Type': 'application/json'},
+                           body: JSON.stringify({
+                               nombre: userName,
+                               telefono: 'Chat_Web',
+                               email: 'chat@web.com',
+                               dolor: `CHAT_IA: ${userPain}`
+                           })
+                       });
+                       Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
+                   }
+               }
+            };
+
+            // --- Lógica del Formulario con n8n ---
             const contactForm = document.getElementById('contact-form');
             const submitBtn = document.getElementById('submit-btn');
             const originalBtnText = submitBtn.innerText;
 
             contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                console.log('--- Iniciando envío de formulario ---');
                 
                 submitBtn.disabled = true;
                 submitBtn.innerText = 'CONECTANDO CON EL SISTEMA...';
@@ -658,52 +697,8 @@
                     dolor: `Negocio: ${document.getElementById('activity').value} | Mensaje: ${document.getElementById('pain_point').value}`
                 };
 
-                console.log('Datos a enviar:', formData);
-
-                // Función para seleccionar servicio dinámicamente
-                window.selectService = (serviceName) => {
-                    document.getElementById('activity').value = serviceName;
-                    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
-                    // Pequeña animación visual en el input de actividad
-                    const activityInput = document.getElementById('activity');
-                    activityInput.style.color = '#00ffcc';
-                    setTimeout(() => activityInput.style.color = 'white', 1000);
-                };
-
-                // Función para WhatsApp Inteligente
-                window.openWhatsApp = (e) => {
-                    e.preventDefault();
-                    const selectedService = document.getElementById('activity').value || "Consultoría General";
-                    const message = encodeURIComponent(`Hola! Vi la web de Automatízame y me interesa el servicio de: ${selectedService}. ¿Podemos coordinar una breve charla?`);
-                    window.open(`https://wa.me/59899385663?text=${message}`, '_blank');
-                };
-
-                // Función para Chat IA (Simulado por ahora para disparar n8n)
-                window.openAIChat = () => {
-                   const userName = prompt("Hola! Soy el asistente de Automatizame_uy. ¿Cómo te llamas?");
-                   if(userName) {
-                       const userPain = prompt(`Un gusto, ${userName}. Cuéntame brevemente, ¿cuál es el proceso que más tiempo te quita hoy?`);
-                       if(userPain) {
-                           alert("Analizando tu respuesta con nuestra IA... En breve recibirás una propuesta estratégica. Te redirigimos al calendario de Seba para profundizar.");
-                           // Disparar datos a n8n de forma silenciosa
-                           fetch('https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps', {
-                               method: 'POST',
-                               headers: {'Content-Type': 'application/json'},
-                               body: JSON.stringify({
-                                   nombre: userName,
-                                   telefono: 'Chat_Web',
-                                   email: 'chat@web.com',
-                                   dolor: `CHAT_IA: ${userPain}`
-                               })
-                           });
-                           Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
-                       }
-                   }
-                };
-
                 try {
                     const WEBHOOK_URL = 'https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps';
-                    
                     const response = await fetch(WEBHOOK_URL, {
                         method: 'POST',
                         headers: {
@@ -713,29 +708,19 @@
                         body: JSON.stringify(formData)
                     });
 
-                    console.log('Respuesta del servidor:', response.status);
-
                     if (response.ok) {
-                        // Guardar nombre y email para pasarlos a Calendly
-                        const userName = formData.nombre;
-                        const userEmail = formData.email;
-
                         alert('🚀 ¡Protocolo activado!\n\nNuestro sistema de Inteligencia Artificial está analizando tu caso ahora mismo para preparar nuestra consultoría.\n\nA continuación, elige el día y hora para nuestro diagnóstico gratuito.');
                         
-                        // Abrir Calendly con los datos ya cargados para que el cliente no repita
                         Calendly.initPopupWidget({
-                            url: `https://calendly.com/sebaagradeno/30min?name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`
+                            url: `https://calendly.com/sebaagradeno/30min?name=${encodeURIComponent(formData.nombre)}&email=${encodeURIComponent(formData.email)}`
                         });
 
                         contactForm.reset();
                     } else {
-                        const errorText = await response.text();
-                        console.error('Error de n8n:', errorText);
-                        throw new Error(`Error ${response.status}: ${errorText}`);
+                        throw new Error(`Error ${response.status}`);
                     }
                 } catch (error) {
-                    console.error('Fallo total de conexión:', error);
-                    alert('❌ Error de comunicación con n8n.\n\nVerifica:\n1. Que el flujo esté ACTIVE en n8n.\n2. Que CORS tenga un * en el Webhook.\n3. Que la Auth sea None.');
+                    alert('❌ Error de comunicación con n8n.\n\nVerifica:\n1. Que el flujo esté ACTIVE en n8n.\n2. Que la URL sea correcta.');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerText = originalBtnText;
