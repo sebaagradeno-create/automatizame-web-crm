@@ -270,47 +270,57 @@
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Service 1 -->
                     <div
-                        class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden">
+                        class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden group cursor-pointer"
+                        onclick="selectService('Automatización de Procesos')">
                         <span
                             class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">01</span>
                         <div class="space-y-4 relative">
-                            <h3 class="font-display font-black text-xl text-white italic">Flujos en<br>Piloto Automático
+                            <h3 class="font-display font-black text-xl text-white italic group-hover:text-primary transition-colors">Flujos en<br>Piloto Automático
                             </h3>
                             <p class="text-slate-500 text-xs leading-relaxed">Liberamos tus manos. Automatización
                                 profunda de procesos repetitivos.</p>
                         </div>
-                        <span class="material-symbols-outlined text-primary text-3xl">sync_alt</span>
+                        <div class="flex justify-between items-center">
+                            <span class="material-symbols-outlined text-primary text-3xl">sync_alt</span>
+                            <span class="text-[10px] font-black text-primary opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Seleccionar</span>
+                        </div>
                     </div>
 
                     <!-- Service 2 -->
-                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden"
-                        style="animation-delay: 1s">
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden group cursor-pointer"
+                        style="animation-delay: 1s" onclick="selectService('CRM Arquitectónico')">
                         <span
                             class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">02</span>
                         <div class="space-y-4 relative">
-                            <h3 class="font-display font-black text-xl text-white italic">CRM<br>Arquitectónico</h3>
+                            <h3 class="font-display font-black text-xl text-white italic group-hover:text-primary transition-colors">CRM<br>Arquitectónico</h3>
                             <p class="text-slate-500 text-xs leading-relaxed">Tu base de datos, tu activo más valioso,
                                 gestionado sin errores.</p>
                         </div>
-                        <span class="material-symbols-outlined text-primary text-3xl">database</span>
+                        <div class="flex justify-between items-center">
+                            <span class="material-symbols-outlined text-primary text-3xl">database</span>
+                            <span class="text-[10px] font-black text-primary opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Seleccionar</span>
+                        </div>
                     </div>
 
                     <!-- Service 3 -->
-                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden"
-                        style="animation-delay: 2s">
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating relative overflow-hidden group cursor-pointer"
+                        style="animation-delay: 2s" onclick="selectService('Soporte Neuronal / Agentes IA')">
                         <span
                             class="text-primary/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">03</span>
                         <div class="space-y-4 relative">
-                            <h3 class="font-display font-black text-xl text-white italic">Soporte<br>Neuronal</h3>
+                            <h3 class="font-display font-black text-xl text-white italic group-hover:text-primary transition-colors">Soporte<br>Neuronal</h3>
                             <p class="text-slate-500 text-xs leading-relaxed">IA que no solo responde, resuelve.
                                 Atención 24/7 sin humanos.</p>
                         </div>
-                        <span class="material-symbols-outlined text-primary text-3xl">neurology</span>
+                        <div class="flex justify-between items-center">
+                            <span class="material-symbols-outlined text-primary text-3xl">psychology</span>
+                            <span class="text-[10px] font-black text-primary opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Seleccionar</span>
+                        </div>
                     </div>
 
                     <!-- Service 4 -->
-                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating border-accent/20 relative overflow-hidden"
-                        style="animation-delay: 3.5s">
+                    <div class="glass-card p-8 space-y-12 flex flex-col justify-between floating border-accent/20 relative overflow-hidden group cursor-pointer"
+                        style="animation-delay: 3.5s" onclick="selectService('Contenido Exponencial / IA Social')">
                         <span
                             class="text-accent/10 font-display font-black text-6xl absolute -top-4 -left-2 italic">04</span>
                         <div class="space-y-4 relative">
@@ -319,7 +329,10 @@
                             <p class="text-slate-500 text-xs leading-relaxed">Domina las redes. Sistemas de contenido
                                 masivo con ADN de IA.</p>
                         </div>
-                        <span class="material-symbols-outlined text-accent text-3xl">rocket_launch</span>
+                        <div class="flex justify-between items-center">
+                            <span class="material-symbols-outlined text-accent text-3xl">rocket_launch</span>
+                            <span class="text-[10px] font-black text-accent opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Seleccionar</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -646,6 +659,47 @@
                 };
 
                 console.log('Datos a enviar:', formData);
+
+                // Función para seleccionar servicio dinámicamente
+                window.selectService = (serviceName) => {
+                    document.getElementById('activity').value = serviceName;
+                    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+                    // Pequeña animación visual en el input de actividad
+                    const activityInput = document.getElementById('activity');
+                    activityInput.style.color = '#00ffcc';
+                    setTimeout(() => activityInput.style.color = 'white', 1000);
+                };
+
+                // Función para WhatsApp Inteligente
+                window.openWhatsApp = (e) => {
+                    e.preventDefault();
+                    const selectedService = document.getElementById('activity').value || "Consultoría General";
+                    const message = encodeURIComponent(`Hola! Vi la web de Automatízame y me interesa el servicio de: ${selectedService}. ¿Podemos coordinar una breve charla?`);
+                    window.open(`https://wa.me/59899385663?text=${message}`, '_blank');
+                };
+
+                // Función para Chat IA (Simulado por ahora para disparar n8n)
+                window.openAIChat = () => {
+                   const userName = prompt("Hola! Soy el asistente de Automatizame_uy. ¿Cómo te llamas?");
+                   if(userName) {
+                       const userPain = prompt(`Un gusto, ${userName}. Cuéntame brevemente, ¿cuál es el proceso que más tiempo te quita hoy?`);
+                       if(userPain) {
+                           alert("Analizando tu respuesta con nuestra IA... En breve recibirás una propuesta estratégica. Te redirigimos al calendario de Seba para profundizar.");
+                           // Disparar datos a n8n de forma silenciosa
+                           fetch('https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps', {
+                               method: 'POST',
+                               headers: {'Content-Type': 'application/json'},
+                               body: JSON.stringify({
+                                   nombre: userName,
+                                   telefono: 'Chat_Web',
+                                   email: 'chat@web.com',
+                                   dolor: `CHAT_IA: ${userPain}`
+                               })
+                           });
+                           Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
+                       }
+                   }
+                };
 
                 try {
                     const WEBHOOK_URL = 'https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps';
