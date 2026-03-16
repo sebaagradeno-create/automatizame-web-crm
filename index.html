@@ -700,24 +700,17 @@
                 try {
                     const WEBHOOK_URL = 'https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps';
                     
-                    // Enviar como formulario simple para evitar CORS preflight (OPTIONS)
-                    const formBody = [];
-                    for (const property in formData) {
-                        const encodedKey = encodeURIComponent(property);
-                        const encodedValue = encodeURIComponent(formData[property]);
-                        formBody.push(encodedKey + "=" + encodedValue);
-                    }
-                    
                     const response = await fetch(WEBHOOK_URL, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
-                        body: formBody.join("&")
+                        body: JSON.stringify(formData)
                     });
 
                     if (response.ok) {
-                        alert('🚀 ¡Protocolo activado!\n\nNuestro sistema de Inteligencia Artificial está analizando tu caso ahora mismo para preparar nuestra consultoría.\n\nA continuación, elige el día y hora para nuestro diagnóstico gratuito.');
+                        alert('🚀 ¡Protocolo activado!\n\nNuestro sistema de Inteligencia Artificial está analizando tu caso ahora mismo.\n\nA continuación, elige el día y hora para nuestro diagnóstico gratuito.');
                         
                         Calendly.initPopupWidget({
                             url: `https://calendly.com/sebaagradeno/30min?name=${encodeURIComponent(formData.nombre)}&email=${encodeURIComponent(formData.email)}`
@@ -725,10 +718,13 @@
 
                         contactForm.reset();
                     } else {
-                        throw new Error(`Error ${response.status}`);
+                        const errorData = await response.text();
+                        console.error('Error de n8n:', errorData);
+                        alert(`❌ El servidor n8n respondió con un error (${response.status}). Revisa las ejecuciones en n8n.`);
                     }
                 } catch (error) {
-                    alert('❌ Error de comunicación con n8n.\n\nVerifica:\n1. Que el flujo esté ACTIVE en n8n.\n2. Que la URL sea correcta.');
+                    console.error('Fallo de red:', error);
+                    alert('❌ No se pudo conectar con n8n. \n\nEsto suele ser por:\n1. El flujo NO está en verde (Active).\n2. El servidor n8n está caído.');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerText = originalBtnText;
