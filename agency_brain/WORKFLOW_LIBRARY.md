@@ -17,13 +17,19 @@ Este flujo centraliza la entrada de leads desde la web y dispara el análisis de
 
 ---
 
-## Flujo Futuro: WhatsApp con Evolution API (Planificación)
+## 🌐 Infraestructura y Despliegue (CI/CD)
 
-### Descripción:
-Conexión de n8n con Evolution API para respuestas automáticas en WhatsApp de forma profesional.
+### Hostinger Auto-deploy (GitHub Webhook)
+- **Repositorio**: `https://github.com/sebaagradeno-create/automatizame-web-crm.git`
+- **Rama**: `main`
+- **Configuración**: Conectado vía Webhook a GitHub para actualización automática al hacer `git push`.
+- **Nota**: El directorio `public_html` debe gestionarse exclusivamente vía Git para evitar conflictos.
 
-### Estructura Técnica:
-1. **Webhook (In)**: Lee mensajes de WhatsApp.
-2. **AI Agent (Estratega)**: Interpreta el mensaje del cliente.
-3. **Evolution (Out)**: Responde con empatía técnica y califica presupuesto.
-4. **Resumen**: Registra toda la conversación en Postgres.
+### Servidor n8n (Easypanel VPS)
+- **URL**: `https://automatizacion1-n8n.gc7erq.easypanel.host`
+- **Variables Críticas (Base de Datos)**:
+  - `DB_POSTGRESDB_HOST`: `automatizacion1_data-base-n8n`
+  - `DB_POSTGRESDB_DATABASE`: `automatizacion1`
+  - `DB_POSTGRESDB_USER`: `postgres`
+- **Idioma**: `N8N_DEFAULT_LOCALE=es`
+- **Zona Horaria**: `America/Montevideo`
