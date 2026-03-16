@@ -699,13 +699,21 @@
 
                 try {
                     const WEBHOOK_URL = 'https://automatizacion1-n8n.gc7erq.easypanel.host/webhook/webhook-leads-vps';
+                    
+                    // Enviar como formulario simple para evitar CORS preflight (OPTIONS)
+                    const formBody = [];
+                    for (const property in formData) {
+                        const encodedKey = encodeURIComponent(property);
+                        const encodedValue = encodeURIComponent(formData[property]);
+                        formBody.push(encodedKey + "=" + encodedValue);
+                    }
+                    
                     const response = await fetch(WEBHOOK_URL, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                         },
-                        body: JSON.stringify(formData)
+                        body: formBody.join("&")
                     });
 
                     if (response.ok) {
