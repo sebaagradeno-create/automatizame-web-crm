@@ -46,8 +46,7 @@
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 1; pointer-events: none;
-            object-fit: contain; /* Control total de la imagen */
-            object-position: center center;
+            object-fit: cover; object-position: center 25%; /* Bajamos un poco el horizonte para ver más cara */
             opacity: 1;
             filter: contrast(1.15) brightness(1.1); 
             transition: transform 0.4s ease-out;
@@ -56,8 +55,8 @@
         /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             #cyborg-bg {
-                object-fit: contain;
-                object-position: center center;
+                object-fit: cover;
+                object-position: center center; /* Centrado perfecto en móvil vertical */
             }
             body { 
                 background-color: #000;
