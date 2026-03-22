@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Automatízame_uy | Sistemas de Ingeniería IA & CRM Autónomo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Outfit:wght@100;300;400;600;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+    
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --accent: #b026ff;
+            --neon-purple: #b026ff;
+            --dark-bg: #000;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            overflow-x: hidden;
+            font-size: 1.15rem; line-height: 1.6;
+        }
+
+        /* ===== CYBORG: INMERSIÓN TOTAL (Cover Mode) ===== */
+        #cyborg-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none;
+            object-fit: cover; object-position: center 20%;
+            opacity: 0.65; 
+            filter: grayscale(0.5) brightness(0.9) contrast(1.1); 
+            transition: transform 0.2s ease-out, filter 0.5s ease, opacity 0.5s ease;
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            #cyborg-bg, #cyborg-color-overlay { display: none !important; }
+            body { 
+                background: radial-gradient(circle at center, #0a0a0d 0%, #000 100%);
+                background-image: url('logo.png');
+                background-repeat: no-repeat;
+                background-position: center 80%;
+                background-size: 40%;
+                background-attachment: fixed;
+                background-blend-mode: color-burn;
+            }
+        }
+
+        #cyborg-color-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 2; pointer-events: none;
+            background: 
+                radial-gradient(circle at 50% 10%, rgba(0, 255, 204, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 10% 50%, rgba(0, 180, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 50%, rgba(176, 38, 255, 0.1) 0%, transparent 40%);
+            opacity: 1; mix-blend-mode: screen; 
+            transition: opacity 0.7s ease;
+        }
+
+        #cyborg-bg.active {
+            opacity: 0.7;
+            filter: grayscale(0.2) brightness(0.95);
+        }
+
+        .glass-card {
+            background: rgba(5, 5, 10, 0.85); 
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 20px;
+            padding: 2.5rem;
+        }
+
+        h1, h2, .service-card h3 { 
+            text-shadow: 0 4px 30px rgba(0,0,0,1);
+            color: #ffffff;
+        }
+
+        /* FORMULARIO PREMIUM */
+        label { font-size: 1.25rem !important; font-weight: 700 !important; color: #00ffcc !important; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        input, select, textarea { 
+            font-size: 1.2rem !important; padding: 1.2rem 1.5rem !important;
+            background: rgba(0,0,0,0.9) !important; border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #ffffff !important; border-radius: 12px !important;
+        }
+    </style>
+</head>
+<body>
+    <img src="cyborg.png" id="cyborg-bg" alt="Cyborg">
+    <div id="cyborg-color-overlay"></div>
+
+    <header class="fixed top-0 left-0 w-full z-[80] transition-all duration-500 bg-transparent py-6">
+        <nav class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <img src="logo.png" alt="Logo" class="size-8">
+                <span class="text-white font-extrabold text-lg tracking-tight">automatizame.<span class="text-neon-purple italic">uy</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-10">
+                <a href="#servicios" class="text-white font-bold text-[1.2rem] hover:text-primary transition-all tracking-wider uppercase">Servicios</a>
+                <a href="#proceso" class="text-white font-bold text-[1.2rem] hover:text-primary transition-all tracking-wider uppercase">Método</a>
+                <a href="#contacto" class="text-white font-bold text-[1.2rem] hover:text-primary transition-all tracking-wider uppercase">Contacto</a>
+                <button onclick="Calendly.initPopupWidget({url: 'https://calendly.com/sebaagradeno/30min'})" 
+                        class="bg-white text-black px-8 py-3 rounded-xl font-black text-sm tracking-widest hover:scale-105 transition-all">
+                    DIAGNÓSTICO GRATUITO
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="relative z-10">
+        <!-- HERO SECTION -->
+        <section id="inicio" class="min-h-screen flex items-center justify-center pt-24 pb-12">
+            <div class="max-w-7xl mx-auto px-6 text-center">
+                <h1 class="text-5xl md:text-8xl font-black mb-8 leading-[1.1]">INGENIERÍA DE <br/><span class="text-primary italic">IA GENERATIVA</span></h1>
+                <p class="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-12">No somos una agencia de marketing. Somos ingenieros de procesos que automatizan tu escala.</p>
+                <div class="flex flex-col md:flex-row gap-6 justify-center">
+                    <button onclick="document.getElementById('contacto').scrollIntoView({behavior:'smooth'})" 
+                            class="bg-primary text-black px-12 py-5 rounded-2xl font-black text-xl hover:shadow-[0_0_30px_rgba(0,255,204,0.3)] transition-all">INICIAR DIAGNÓSTICO</button>
+                    <button onclick="document.getElementById('servicios').scrollIntoView({behavior:'smooth'})" 
+                            class="border-2 border-white/20 px-12 py-5 rounded-2xl font-black text-xl hover:bg-white/5 transition-all">VER SOLUCIONES</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICIOS -->
+        <section id="servicios" class="py-24">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 class="text-4xl md:text-6xl font-black mb-16 text-center">NUESTRAS <span class="text-neon-purple">SOLUCIONES</span></h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="service-card glass-card" data-service="automatizacion">
+                        <h3 class="text-2xl font-bold mb-4">FLUJOS IA</h3>
+                        <p class="text-slate-400">Automatización de flujos de trabajo con n8n y Agentes de IA que operan 24/7.</p>
+                    </div>
+                    <div class="service-card glass-card" data-service="crm">
+                        <h3 class="text-2xl font-bold mb-4">CRM & WEB</h3>
+                        <p class="text-slate-400">Implementamos CRMs inteligentes y webs de alta conversión que venden por ti.</p>
+                    </div>
+                    <div class="service-card glass-card" data-service="soporte">
+                        <h3 class="text-2xl font-bold mb-4">SOPORTE 2.0</h3>
+                        <p class="text-slate-400">Chatbots inteligentes con voz y texto que resuelven el 90% de las consultas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACTO -->
+        <section id="contacto" class="py-24 bg-black/40">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="glass-card max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-black mb-12 text-center text-white">SOLICITAR <span class="text-primary italic"> DIAGNÓSTICO</span></h2>
+                    <form id="contact-form" class="space-y-10 text-left">
+                        <div class="grid md:grid-cols-2 gap-10">
+                            <div class="space-y-4">
+                                <label for="name">Tu Nombre Completo</label>
+                                <input type="text" id="name" name="name" placeholder="Escribe tu nombre..." class="w-full" required>
+                            </div>
+                            <div class="space-y-4">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" class="w-full" required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <label for="company">Nombre de la Empresa o Emprendimiento</label>
+                            <input type="text" id="company" name="company" placeholder="Dinos tu empresa..." class="w-full">
+                        </div>
+
+                        <div class="space-y-4">
+                            <label for="message">Cuéntanos sobre tu negocio</label>
+                            <textarea id="message" name="message" rows="4" placeholder="¿Qué procesos quieres optimizar?" class="w-full" required></textarea>
+                        </div>
+
+                        <button type="submit" id="submit-btn" 
+                                class="w-full bg-gradient-to-r from-primary to-neon-purple text-black py-6 rounded-2xl font-black text-xl uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-[0_20px_40px_rgba(0,255,204,0.3)]">
+                            INICIAR TRANSFORMACIÓN IA
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cyborg = document.getElementById('cyborg-bg');
+            const overlay = document.getElementById('cyborg-color-overlay');
+            const cards = document.querySelectorAll('.service-card');
+
+            cards.forEach(c => {
+                c.addEventListener('mouseenter', () => {
+                    cyborg.classList.add('active');
+                    overlay.style.opacity = '1';
+                });
+                c.addEventListener('mouseleave', () => {
+                    overlay.style.opacity = '0';
+                    cyborg.classList.remove('active');
+                });
+            });
+
+            // Parallax Ojos Cyborg (Mobile OFF)
+            if (window.innerWidth > 1024) {
+                document.addEventListener('mousemove', (e) => {
+                    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                    cyborg.style.transform = `translate(${x}px, ${y}px) scale(1.05)`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
