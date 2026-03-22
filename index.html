@@ -35,7 +35,7 @@
         * { scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--dark-bg);
+            background-color: #000;
             color: #ffffff;
             overflow-x: hidden;
             font-size: 1rem; line-height: 1.5;
@@ -46,8 +46,9 @@
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 1; pointer-events: none;
-            object-fit: cover; object-position: center 20%;
-            opacity: 1; /* Brillo total permanente */
+            object-fit: contain; /* Control total de la imagen */
+            object-position: center center;
+            opacity: 1;
             filter: contrast(1.15) brightness(1.1); 
             transition: transform 0.4s ease-out;
         }
@@ -55,8 +56,8 @@
         /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             #cyborg-bg {
-                object-fit: cover;
-                object-position: 45% center; /* Centramos un poco más la cara en móvil */
+                object-fit: contain;
+                object-position: center center;
             }
             body { 
                 background-color: #000;
