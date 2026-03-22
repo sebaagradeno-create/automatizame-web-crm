@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook-leads-inmobiliaria",
+        "options": {}
+      },
+      "name": "Webhook Leads FB",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "fields": [
+            { "name": "nombre", "value": "={{ $json.body.name }}" },
+            { "name": "telefono", "value": "={{ $json.body.phone }}" },
+            { "name": "interes", "value": "={{ $json.body.property_interest }}" }
+          ]
+        }
+      },
+      "name": "Formatear Datos",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": "TU_ID_NOTION_AQUI",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Nombre", "value": "={{ $json.nombre }}" },
+            { "key": "WhatsApp", "value": "={{ $json.telefono }}" }
+          ]
+        }
+      },
+      "name": "Guardar en Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "TU_TELEGRAM_ID",
+        "text": "=🚀 ¡NUEVO LEAD INMOBILIARIO!\n👤 Nombre: {{ $json.nombre }}\n📞 WhatsApp: {{ $json.telefono }}\n🏠 Interés: {{ $json.interes }}"
+      },
+      "name": "Aviso Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "TU_API_WHATSAPP_AQUI",
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "message", "value": "=Hola {{ $json.nombre }}, un gusto saludarte. Hemos recibido tu interés por la propiedad {{ $json.interes }}..." }
+          ]
+        }
+      },
+      "name": "WhatsApp Bienvenida",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Leads FB": { "main": [[{ "node": "Formatear Datos", "type": "main", "index": 0 }]] },
+    "Formatear Datos": { "main": [[{ "node": "Guardar en Notion", "type": "main", "index": 0 }]] },
+    "Guardar en Notion": { "main": [[{ "node": "Aviso Telegram", "type": "main", "index": 0 }, { "node": "WhatsApp Bienvenida", "type": "main", "index": 0 }]] }
+  }
+}
