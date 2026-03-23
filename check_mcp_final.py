@@ -38,6 +38,6 @@ def check_mcp(url, token):
         print(f"\n🛑 Error inesperado: {e}")
 
 if __name__ == "__main__":
-    URL = "https://automatizacion1-n8n.gc7erq.easypanel.host/mcp"
-    TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmN2Q4MjA4YS1jMDFlLTQwZDctODVlYS1lMTI4NjQ3NGM5OTgiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImM4YjlkNDU3LTFmNWEtNGM3Ni05ZmNmLTA2MjdlY2VlNDRhZSIsImlhdCI6MTc3MzY0NDE3NX0.rA-nXmoNVIVb8zvGEEQpmhkMaU6KF5cltuCLhir36FA"
+    URL = "https://n8n.automatizameuy.com/mcp-server/http"
+    TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmN2Q4MjA4YS1jMDFlLTQwZDctODVlYS1lMTI4NjQ3NGM5OTgiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6IjdlN2FiMzMyLTk5ZTYtNDdlNy1hOTA5LWRjNDJkOTcwMTZkOCIsImlhdCI6MTc3NDI3NzczOX0.3ynYp8UvDuQIo9P8RoguQRu0DqxeEmWpVMIVNxNElrs"
     check_mcp(URL, TOKEN)

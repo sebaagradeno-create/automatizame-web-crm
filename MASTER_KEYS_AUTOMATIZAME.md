@@ -10,6 +10,7 @@ Este archivo contiene toda la información crítica configurada hasta ahora.
 | :--- | :--- | :--- |
 | **Panel Control** | `https://72.62.13.132:3000` | Acceso principal Easypanel |
 | **n8n Oficial** | `https://n8n.automatizameuy.com` | Tu motor de automatización |
+| **n8n MCP Token**| `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmN2Q4MjA4YS1jMDFlLTQwZDctODVlYS1lMTI4NjQ3NGM5OTgiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6IjdlN2FiMzMyLTk5ZTYtNDdlNy1hOTA5LWRjNDJkOTcwMTZkOCIsImlhdCI6MTc3NDI3NzczOX0.3ynYp8UvDuQIo9P8RoguQRu0DqxeEmWpVMIVNxNElrs` | Llave para Antigravity |
 | **Supabase API** | `https://db.automatizameuy.com` | Tu base de datos profesional |
 
 ---
