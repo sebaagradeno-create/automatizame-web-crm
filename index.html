@@ -509,21 +509,27 @@
             window.openAIChat = () => {
                 const nombre = prompt("¿Cómo te llamas?");
                 if (!nombre) return;
-                const empresa = prompt(`Hola ${nombre}, ¿cuál es el nombre de tu empresa? (Para que Seba pueda investigarla antes)`);
-                const redes = prompt("¿Y tus redes sociales o sitio web? (Opcional, pero ayuda mucho al diagnóstico)");
+                const email = prompt(`¡Hola ${nombre}! Déjanos tu email para enviarte el diagnóstico por correo:`);
+                if (!email) return;
+                const whatsapp = prompt(`Y tu WhatsApp (con código de país) para que Seba pueda contactarte:`);
+                if (!whatsapp) return;
+                const empresa = prompt(`¿Cuál es el nombre de tu empresa?`);
+                const redes = prompt("¿Y tus redes sociales o sitio web? (Ayuda mucho al diagnóstico previo)");
                 const dolor = prompt(`Perfecto. ¿Qué proceso o tarea manual te gustaría automatizar hoy mismo?`);
                 if (!dolor) return;
                 
                 // ⚡ CALENDLY INSTANTÁNEO
                 Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
 
-                // 🤖 ENVIAR DATOS EN SEGUNDO PLANO
+                // 🤖 ENVIAR DATOS EN SEGUNDO PLANO - MAPEADO PARA N8N
                 fetch(n8n_webhook, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         origen: 'Globo IA Web', 
-                        nombre, 
+                        nombre: nombre,
+                        email: email,
+                        whatsapp: whatsapp,
                         empresa: empresa || 'No especificada',
                         url_web_redes: redes || 'No especificada',
                         mensaje: dolor 
