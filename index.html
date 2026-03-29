@@ -517,14 +517,23 @@
             window.openAIChat = () => {
                 const nombre = prompt("¿Cómo te llamas?");
                 if (!nombre) return;
-                const dolor = prompt(`Hola ${nombre}, ¿qué quieres automatizar?`);
+                const empresa = prompt(`Hola ${nombre}, ¿cuál es el nombre de tu empresa? (Para que Seba pueda investigarla antes)`);
+                const redes = prompt("¿Y tus redes sociales o sitio web? (Opcional, pero ayuda mucho al diagnóstico)");
+                const dolor = prompt(`Perfecto. ¿Qué proceso o tarea manual te gustaría automatizar hoy mismo?`);
                 if (!dolor) return;
+                
                 fetch(n8n_webhook, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ origen: 'Globo IA', nombre, mensaje: dolor })
+                    body: JSON.stringify({ 
+                        origen: 'Globo IA Web', 
+                        nombre, 
+                        empresa: empresa || 'No especificada',
+                        url_web_redes: redes || 'No especificada',
+                        mensaje: dolor 
+                    })
                 }).then(() => {
-                    alert('Datos enviados. ¡Agenda tu sesión!');
+                    alert('¡Excelente! Seba ya tiene los datos para preparar tu diagnóstico. Elige el horario para tu reunión ahora mismo.');
                     Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
                 });
             };
