@@ -476,25 +476,17 @@
                     mensaje: document.getElementById('message').value
                 };
 
-                try {
-                    const response = await fetch(n8n_webhook, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    if (response.ok) {
-                        form.reset();
-                        // Abrimos Calendly inmediatamente de forma elegante sin Alerts invasivos
-                        Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
-                    }
-                } catch (err) {
-                    console.error('Error enviando a n8n:', err);
-                    alert('❌ Hubo un pequeño error de red, pero puedes agendar tu cita directamente.');
-                    Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = 'ENVIAR DIAGNÓSTICO';
-                }
+                // ⚡ CALENDLY INSTANTÁNEO
+                Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
+
+                // 🤖 ENVIAR DATOS EN SEGUNDO PLANO
+                fetch(n8n_webhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).catch(err => console.error('Error enviando a n8n:', err));
+
+                form.reset();
             });
             
             window.sharePage = async () => {
@@ -522,6 +514,10 @@
                 const dolor = prompt(`Perfecto. ¿Qué proceso o tarea manual te gustaría automatizar hoy mismo?`);
                 if (!dolor) return;
                 
+                // ⚡ CALENDLY INSTANTÁNEO
+                Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
+
+                // 🤖 ENVIAR DATOS EN SEGUNDO PLANO
                 fetch(n8n_webhook, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -532,10 +528,7 @@
                         url_web_redes: redes || 'No especificada',
                         mensaje: dolor 
                     })
-                }).then(() => {
-                    alert('¡Excelente! Seba ya tiene los datos para preparar tu diagnóstico. Elige el horario para tu reunión ahora mismo.');
-                    Calendly.initPopupWidget({ url: 'https://calendly.com/sebaagradeno/30min' });
-                });
+                }).catch(err => console.error('Error enviando a n8n (Chatbot):', err));
             };
         });
     </script>
