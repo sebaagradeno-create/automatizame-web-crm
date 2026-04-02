@@ -3,4 +3,27 @@ node_modules/
 .DS_Store
 dist/
 build/
+
+# 🛡️ ARCHIVOS DE SEGURIDAD (Cajas Fuertes y Logs)
+*.sqlite
+*_PRIVADO.md
+*_KEYS*.md
+backup_*.txt
+*.log
+
+# 🛡️ CARPETAS INTERNAS DEL BACKEND Y AGENTES
 skills/
+agency-skills/
+agency_brain/
+.agents/
+n8n-workflows/
+workflows-n8n-export/
+CATALOGO_AGENCIA/
+laboratorio_3d/
+POC_LANDING/
+
+# 🛡️ EXTENSIONES Y SCRIPTS DE PRUEBAS
+*.py
+*.js
+*.json
+*.sql
