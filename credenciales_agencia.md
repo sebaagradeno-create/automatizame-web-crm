@@ -12,6 +12,8 @@
 - **API Key:** `sk_V2_hgu_kYlmUFlENqK_EYZ8dqZSOke1uW8HNgUErTY2gJmIYtj4`
 - **Key Name:** `seba de marketing`
 - **Modo:** Agent
+- **Avatar ID (Pibe de oficina):** `82d81dab145d4934bef8a20f0ee8ad1d`
+- **Voice ID (Tomas - Uruguay/Arg):** `54f389008bd74f37bccf692eb544e2f7`
 
 ---
 *Este archivo está protegido en el repositorio privado de la inteligencia central de Automatízame.*
