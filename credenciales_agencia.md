@@ -5,6 +5,7 @@
 ## 🎙️ ElevenLabs (Voces IA)
 - **API Key:** `sk_ff4df6a33194537736a72458f46f7ca13e443a623b9be73f`
 - **Voice ID (Locutor Uruguay/Arg):** `QK4xDwo9ESPHA4JNUpX3`
+- **Voice ID (Asistente Femenina):** `4wDRKlxcHNOFO5kBvE81`
 - **Permisos otorgados:** Text To Speech, Leer Voces, Leer Modelos.
 
 ---
