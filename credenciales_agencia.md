@@ -8,5 +8,10 @@
 - **Voice ID (Asistente Femenina):** `4wDRKlxcHNOFO5kBvE81`
 - **Permisos otorgados:** Text To Speech, Leer Voces, Leer Modelos.
 
+## 🎥 HeyGen (Video IA)
+- **API Key:** `sk_V2_hgu_kYlmUFlENqK_EYZ8dqZSOke1uW8HNgUErTY2gJmIYtj4`
+- **Key Name:** `seba de marketing`
+- **Modo:** Agent
+
 ---
 *Este archivo está protegido en el repositorio privado de la inteligencia central de Automatízame.*
