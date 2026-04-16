@@ -227,11 +227,17 @@
                 <a href="#proceso" class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-white font-bold text-[10px] hover:bg-primary/20 hover:border-primary/50 transition-all tracking-[0.2em] uppercase">Método</a>
                 <a href="#contacto" class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-white font-bold text-[10px] hover:bg-primary/20 hover:border-primary/50 transition-all tracking-[0.2em] uppercase">Contacto</a>
             </div>
-            <div class="hidden lg:block w-1/4 text-right">
-                 <button onclick="Calendly.initPopupWidget({url: 'https://calendly.com/sebaagradeno/30min'})" 
+            <div class="hidden lg:flex items-center gap-3 w-1/4 justify-end">
+                 <button onclick="Calendly.initPopupWidget({url: 'https://calendly.com/sebaagradeno/30min'})"
                         class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black text-white hover:text-primary hover:border-primary transition-all tracking-widest uppercase">
                     Agendar Llamada
                 </button>
+                <a href="https://comando.automatizameuy.com" target="_blank"
+                   title="Panel de control"
+                   class="text-white/20 hover:text-primary/60 transition-all duration-300 p-1.5 rounded-full hover:bg-primary/5"
+                   style="font-size:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>
+                </a>
             </div>
         </nav>
     </header>
@@ -419,7 +425,7 @@
             const cyborg = document.getElementById('cyborg-bg');
             const overlay = document.getElementById('cyborg-color-overlay');
             const cards = document.querySelectorAll('.service-card');
-            const n8n_webhook = 'https://n8n.automatizameuy.com/webhook/webhook-leads-v4';
+            const n8n_webhook = 'https://n8n.automatizameuy.com/webhook/web-leads-automatizame';
 
             const colorMap = {
                 'automatizacion': 'radial-gradient(circle at 45% 45%, rgba(0,255,150,0.6) 0%, transparent 80%)',
