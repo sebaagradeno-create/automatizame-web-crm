@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado Real de los Agentes — Automatízame</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070a; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+      --primary: #00f2ff; --secondary: #7000ff; --accent: #ff00c8;
+      --green: #00ff88; --orange: #ff8800; --red: #ff4444; --yellow: #ffcc00;
+      --text: #e0e6ed; --muted: rgba(224,230,237,0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; }
+
+    header {
+      text-align: center; padding: 50px 20px 40px;
+      background: radial-gradient(ellipse at center top, rgba(112,0,255,0.12) 0%, transparent 65%);
+      border-bottom: 1px solid var(--border);
+    }
+    header .back { display:inline-block; margin-bottom:16px; font-size:0.75rem; color:var(--muted); letter-spacing:1px; text-decoration:none; }
+    header .back:hover { color:var(--primary); }
+    header h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; background:linear-gradient(135deg,var(--primary),var(--secondary),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px; }
+    header p { color:var(--muted); font-size:0.9rem; }
+
+    .container { max-width:1200px; margin:0 auto; padding:50px 24px; }
+    .sec-label { font-size:0.65rem; letter-spacing:4px; text-transform:uppercase; color:var(--primary); margin-bottom:6px; }
+    .sec-heading { font-size:clamp(1.3rem,2.5vw,1.8rem); font-weight:700; margin-bottom:32px; }
+    .sec-heading span { color:var(--primary); }
+    .mb-60 { margin-bottom:60px; }
+
+    /* TRUTH BOX */
+    .truth-box {
+      background: linear-gradient(135deg, rgba(0,242,255,0.05), rgba(112,0,255,0.05));
+      border: 1px solid rgba(0,242,255,0.2);
+      border-radius: 16px; padding: 28px 32px; margin-bottom: 50px;
+    }
+    .truth-box h2 { font-size:1.1rem; font-weight:700; color:var(--primary); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+    .truth-box p { font-size:0.85rem; color:var(--muted); line-height:1.7; margin-bottom:10px; }
+    .truth-box p:last-child { margin-bottom:0; }
+    .truth-box strong { color:var(--text); }
+
+    /* AGENT STATUS CARD */
+    .agent-block {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px; margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    .agent-block.real   { border-left: 3px solid var(--green); }
+    .agent-block.partial{ border-left: 3px solid var(--orange); }
+    .agent-block.planned{ border-left: 3px solid var(--muted); }
+
+    .ab-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+    .ab-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .real    .ab-icon { background:rgba(0,255,136,0.1);  border:1px solid rgba(0,255,136,0.2); }
+    .partial .ab-icon { background:rgba(255,136,0,0.1);  border:1px solid rgba(255,136,0,0.2); }
+    .planned .ab-icon { background:rgba(255,255,255,0.04); border:1px solid var(--border); }
+
+    .ab-meta { flex:1; }
+    .ab-name { font-size:1.05rem; font-weight:700; margin-bottom:3px; }
+    .real    .ab-name { color:var(--green); }
+    .partial .ab-name { color:var(--orange); }
+    .planned .ab-name { color:var(--muted); }
+    .ab-role { font-size:0.72rem; color:var(--muted); letter-spacing:1px; margin-bottom:8px; }
+
+    .status-pill {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:0.63rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+      padding:4px 10px; border-radius:20px;
+    }
+    .sp-real    { background:rgba(0,255,136,0.1);  color:var(--green);  border:1px solid rgba(0,255,136,0.25); }
+    .sp-partial { background:rgba(255,136,0,0.1);  color:var(--orange); border:1px solid rgba(255,136,0,0.25); }
+    .sp-planned { background:rgba(255,255,255,0.04); color:var(--muted); border:1px solid var(--border); }
+    .sp-dot { width:5px; height:5px; border-radius:50%; }
+    .sp-real .sp-dot    { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+    .sp-partial .sp-dot { background:var(--orange); }
+    .sp-planned .sp-dot { background:var(--muted); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .ab-desc { font-size:0.83rem; color:var(--muted); line-height:1.65; margin-bottom:20px; }
+
+    /* HERRAMIENTAS REALES vs PENDIENTES */
+    .tools-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:600px) { .tools-grid { grid-template-columns:1fr; } }
+    .tools-col h4 { font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+    .tools-col.done h4  { color:var(--green); }
+    .tools-col.todo h4  { color:var(--muted); }
+    .tool-item { display:flex; align-items:flex-start; gap:8px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.8rem; line-height:1.5; }
+    .tool-item:last-child { border-bottom:none; }
+    .ti-icon { flex-shrink:0; font-size:0.85rem; margin-top:1px; }
+
+    /* WHERE IT LIVES */
+    .where-lives {
+      background: rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06);
+      border-radius:10px; padding:14px 16px; margin-top:16px;
+      font-size:0.75rem; color:var(--muted); font-family:monospace; line-height:1.8;
+    }
+    .where-lives .wl-label { font-family:'Outfit',sans-serif; font-size:0.68rem; letter-spacing:2px; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+    .where-lives span.path { color:var(--primary); }
+    .where-lives span.ok   { color:var(--green); }
+    .where-lives span.pend { color:var(--orange); }
+
+    /* COWORK EXPLANATION */
+    .cowork-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:18px; margin-bottom:50px; }
+    .cw-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; }
+    .cw-card .cw-icon { font-size:2rem; margin-bottom:12px; }
+    .cw-card h3 { font-size:0.95rem; font-weight:700; margin-bottom:10px; }
+    .cw-card p  { font-size:0.8rem; color:var(--muted); line-height:1.65; }
+    .cw-card .cw-verdict { margin-top:12px; font-size:0.78rem; font-weight:600; padding:8px 12px; border-radius:8px; }
+    .cw-verdict.yes  { background:rgba(0,255,136,0.08); color:var(--green);  border:1px solid rgba(0,255,136,0.2); }
+    .cw-verdict.no   { background:rgba(255,68,68,0.08);  color:var(--red);   border:1px solid rgba(255,68,68,0.2); }
+    .cw-verdict.part { background:rgba(255,136,0,0.08); color:var(--orange); border:1px solid rgba(255,136,0,0.2); }
+
+    /* PLAN $5 */
+    .plan-box {
+      background: linear-gradient(135deg, rgba(255,204,0,0.05), rgba(112,0,255,0.05));
+      border:1px solid rgba(255,204,0,0.2); border-radius:16px; padding:28px; margin-bottom:50px;
+    }
+    .plan-box h2 { font-size:1rem; font-weight:700; color:var(--yellow); margin-bottom:14px; }
+    .plan-row { display:flex; gap:14px; margin-bottom:10px; font-size:0.82rem; }
+    .plan-row:last-child { margin-bottom:0; }
+    .plan-emoji { flex-shrink:0; font-size:1rem; }
+    .plan-text { color:var(--muted); line-height:1.6; }
+    .plan-text strong { color:var(--text); }
+
+    /* NEXT STEPS */
+    .next-list { list-style:none; display:flex; flex-direction:column; gap:12px; }
+    .next-list li {
+      display:flex; gap:16px; align-items:flex-start;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:16px 20px;
+    }
+    .next-list li .nl-num {
+      width:28px; height:28px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem; font-weight:800;
+      background:rgba(0,242,255,0.12); color:var(--primary); border:1px solid rgba(0,242,255,0.2);
+    }
+    .next-list li h4 { font-size:0.88rem; font-weight:700; margin-bottom:4px; }
+    .next-list li p  { font-size:0.78rem; color:var(--muted); line-height:1.5; }
+
+    footer { border-top:1px solid var(--border); text-align:center; padding:24px; color:var(--muted); font-size:0.72rem; letter-spacing:2px; }
+    footer span { color:var(--primary); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back">← Volver al Dashboard</a>
+  <h1>Estado Real de los Agentes</h1>
+  <p>Qué está construido, qué falta, cómo funciona el CoWork — todo explicado con claridad</p>
+</header>
+
+<div class="container">
+
+  <!-- LA VERDAD PRIMERO -->
+  <div class="truth-box">
+    <h2>🔎 La respuesta honesta antes de todo</h2>
+    <p>
+      <strong>¿Esto es un CoWork de múltiples IAs trabajando juntas automáticamente?</strong>
+      Todavía no. Hoy tenés <strong>1 agente real autónomo</strong> (el Agente Seba en Telegram) y <strong>3 agentes de atención</strong> (ELI, ARIA Web, ARIA Instagram) — cada uno hace su trabajo por separado. El CoWork existe como <em>arquitectura y archivos</em>, pero el "router" que los conecta a todos aún no está programado.
+    </p>
+    <p>
+      <strong>¿Quién hace qué hoy?</strong> Yo (Claude Code) manejo <em>todo</em> el desarrollo técnico: código, VPS, workflows, deploys. Antigravity existe como concepto en los archivos .agentes/ pero no es una IA separada corriendo — soy yo también cuando diseño. El CoWork real entre IAs autónomas es el siguiente paso a construir.
+    </p>
+    <p>
+      <strong>¿Necesitás pagar $5 para el CoWork?</strong> Los $5/mes de la API de Claude son para usar Claude desde código externo (n8n, scripts). Para que yo trabaje con vos desde Claude Code, usás tu plan Pro actual. La explicación completa está abajo.
+    </p>
+  </div>
+
+  <!-- AGENTE 1: SEBA -->
+  <p class="sec-label">Agentes desplegados</p>
+  <h2 class="sec-heading">Estado <span>real</span> de cada uno</h2>
+
+  <div class="agent-block real">
+    <div class="ab-header">
+      <div class="ab-icon">🤖</div>
+      <div class="ab-meta">
+        <div class="ab-name">Agente Seba — Asistente Telegram</div>
+        <div class="ab-role">VPS · Puerto 3131 · Node.js · Groq LLaMA</div>
+        <span class="status-pill sp-real"><span class="sp-dot"></span> Funcionando en producción</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      El agente personal de Seba. Recibe mensajes de Telegram → Groq interpreta la intención → ejecuta acción real en el servidor → responde por Telegram. <strong>Completamente autónomo 24/7.</strong>
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Herramientas activas ahora (v3)</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> Coordinador: enruta a Técnico / CRM / Contenido</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Listar, activar y desactivar workflows</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Estado de containers Docker + RAM</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Reiniciar n8n</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Ver leads por canal (WhatsApp / Instagram)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Leads sin contactar (alerta)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Resumen CRM completo</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Generar reels, posts, historias con guión completo</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Por agregar</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Publicar contenido directo desde Telegram</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Generar video HeyGen desde guión</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Gestión inmobiliaria Destino Abril</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Ubicación en el sistema</div>
+      <span class="ok">✓</span> Código: <span class="path">/root/agente-seba/agente_seba_v3.js</span> (VPS activo)<br>
+      <span class="ok">✓</span> Servidor: <span class="path">/root/agente-seba/servidor.js</span> → puerto 3131 (systemd)<br>
+      <span class="ok">✓</span> Respaldo local: <span class="path">scripts/agente_seba_v3.js</span><br>
+      <span class="ok">✓</span> Workflow n8n: <span class="path">Agente Seba Bot v2</span> (ID: 3ZgiLLQCNb1yiFgC)<br>
+      <span class="ok">✓</span> Modelo IA: Groq <span class="path">llama-3.3-70b-versatile</span> (gratis)
+    </div>
+  </div>
+
+  <!-- AGENTE 2: ELI -->
+  <div class="agent-block real">
+    <div class="ab-header">
+      <div class="ab-icon">📞</div>
+      <div class="ab-meta">
+        <div class="ab-name">ELI — Agente WhatsApp</div>
+        <div class="ab-role">WhatsApp Cloud API · Groq Whisper · Gemini · n8n</div>
+        <span class="status-pill sp-real"><span class="sp-dot"></span> Funcionando en producción</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      Cualificadora de leads por WhatsApp. Tiene 6 fases de conversación programadas. Transcribe mensajes de voz con Groq Whisper. Filtra leads no calificados automáticamente (filtro patovica). <strong>Opera sola, sin intervención humana.</strong>
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Capacidades activas</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> Responder mensajes de texto</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Transcribir mensajes de voz (Whisper)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Método de 4 fases de calificación</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Bloqueo: no manda link Calendly sin nombre + email + dolor</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Captura email en conversación y lo guarda en CRM</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Guardar lead en CRM (PostgreSQL)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Se identifica como IA con orgullo</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Mejoras planificadas</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Seguimiento automático 48hs si no responde</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Procesar imágenes (Gemini vision)</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Ubicación en el sistema</div>
+      <span class="ok">✓</span> Workflow n8n: <span class="path">WhatsApp IA - Cualificador Completo</span> (ID: qAeoG7pQnWyKrCYM)<br>
+      <span class="ok">✓</span> Número: <span class="path">+598 97 595 464</span> (WhatsApp Business)<br>
+      <span class="ok">✓</span> Conversación: Groq <span class="path">llama-3.3-70b-versatile</span><br>
+      <span class="ok">✓</span> Voz → texto: Groq <span class="path">whisper-large-v3-turbo</span><br>
+      <span class="ok">✓</span> CRM: tabla <span class="path">clientes</span> en PostgreSQL + workflow <span class="path">Actualizar Email Lead (ELI)</span>
+    </div>
+  </div>
+
+  <!-- AGENTE 3: ARIA INSTAGRAM -->
+  <div class="agent-block real">
+    <div class="ab-header">
+      <div class="ab-icon">📸</div>
+      <div class="ab-meta">
+        <div class="ab-name">ARIA Instagram — DM Bot</div>
+        <div class="ab-role">Instagram Graph API · Meta Business · Gemini · n8n</div>
+        <span class="status-pill sp-real"><span class="sp-dot"></span> Funcionando en producción</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      Bot de DMs de Instagram para <strong>@automatizame_uy</strong>. Versión V2 operativa con botonera tipo "button" de Meta API. Responde automáticamente a quienes escriben por Instagram.
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Capacidades activas</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> Responder DMs con texto</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Botonera interactiva Meta API</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Conversación con método 4 fases (voseo)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Guardar leads en CRM con instagram_username</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Guarda primer mensaje como nota en CRM</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Derivar a WhatsApp o agendar directo</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Se identifica como IA con orgullo</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Mejoras planificadas</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Capturar email del lead en conversación</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Seguimiento si no responde en 48hs</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Ubicación en el sistema</div>
+      <span class="ok">✓</span> Workflow n8n: <span class="path">📩 Instagram DM Bot - ARIA V2</span> (ID: 8Mv1OO1JTWJOHFMa)<br>
+      <span class="ok">✓</span> Canal: <span class="path">@automatizame_uy</span> Instagram<br>
+      <span class="ok">✓</span> Cerebro: Groq <span class="path">llama-3.3-70b-versatile</span><br>
+      <span class="ok">✓</span> CRM: tabla <span class="path">clientes</span> con UNIQUE en instagram_username
+    </div>
+  </div>
+
+  <!-- AGENTE 4: ARIA WEB -->
+  <div class="agent-block real">
+    <div class="ab-header">
+      <div class="ab-icon">🌐</div>
+      <div class="ab-meta">
+        <div class="ab-name">ARIA Web — Chatbot del Sitio</div>
+        <div class="ab-role">automatizameuy.com · Web widget · Gemini · n8n</div>
+        <span class="status-pill sp-real"><span class="sp-dot"></span> Funcionando en producción</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      Chatbot embebido en el sitio web automatizameuy.com. Responde dudas de visitantes, explica los servicios y guía hacia una demo. Funciona como conserje de primer contacto.
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Capacidades activas</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> Responder preguntas sobre servicios</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Guiar hacia agendar demo (Calendly)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Conversación fluida en español</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Pendiente</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Formulario web → CRM (workflow INACTIVO)</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Capturar email/teléfono del visitante</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Ubicación en el sistema</div>
+      <span class="ok">✓</span> Workflow n8n: <span class="path">ARIA Web Chatbot</span> (activo)<br>
+      <span class="ok">✓</span> Sitio: <span class="path">automatizameuy.com</span><br>
+      <span class="pend">⚠</span> Workflow <span class="path">Leads desde Web</span> → INACTIVO (activar para capturar leads del form)
+    </div>
+  </div>
+
+  <!-- AGENTE 5: COORDINADOR (activo) -->
+  <div class="agent-block real">
+    <div class="ab-header">
+      <div class="ab-icon">🧠</div>
+      <div class="ab-meta">
+        <div class="ab-name">Agente Coordinador — Router de intenciones (v3)</div>
+        <div class="ab-role">Groq LLaMA · agente_seba_v3.js · VPS · systemd</div>
+        <span class="status-pill sp-real"><span class="sp-dot"></span> Funcionando en producción</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      El cerebro del Agente Seba v3. Recibe cada instrucción por Telegram, hace una primera llamada a Groq para detectar la intención y enruta automáticamente al sub-agente correcto: Técnico, CRM o Contenido.
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Sub-agentes activos</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> Coordinador: detecta intención con Groq</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Técnico: workflows, Docker, reiniciar n8n</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> CRM: ver leads, leads sin contactar, resumen</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Contenido: genera reels, posts, historias, calendario semanal</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Por agregar</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Publicar contenido directo en Instagram</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Generar video con HeyGen desde guión</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Sub-agente Inmobiliario (Destino Abril)</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Ubicación en el sistema</div>
+      <span class="ok">✓</span> Código activo: <span class="path">/root/agente-seba/agente_seba_v3.js</span><br>
+      <span class="ok">✓</span> Respaldo local: <span class="path">scripts/agente_seba_v3.js</span><br>
+      <span class="ok">✓</span> Backups automáticos: <span class="path">/root/backups/</span> antes de cada cambio
+    </div>
+  </div>
+
+  <!-- AGENTE 6: ANTIGRAVITY -->
+  <div class="agent-block partial">
+    <div class="ab-header">
+      <div class="ab-icon">🎨</div>
+      <div class="ab-meta">
+        <div class="ab-name">Antigravity — Agente de Diseño</div>
+        <div class="ab-role">.agentes/antigravity/ · Claude Code · HTML/CSS/JS</div>
+        <span class="status-pill sp-partial"><span class="sp-dot"></span> Activo — lo manejo yo (Claude) como rol de diseño</span>
+      </div>
+    </div>
+    <p class="ab-desc">
+      Antigravity NO es una IA separada corriendo en un servidor. Es un <strong>rol de trabajo</strong> que yo (Claude Code) asumo cuando hago diseño. Los archivos en <code>.agentes/antigravity/</code> son instrucciones que me guían cuando diseño. Hoy "Antigravity" ya produjo: mapa_ecosistema.html, ecosistema_agentes.html, comando.html, y esta página.
+    </p>
+    <div class="tools-grid">
+      <div class="tools-col done">
+        <h4>✅ Producido por este agente</h4>
+        <div class="tool-item"><span class="ti-icon">✅</span> docs/mapa_ecosistema.html</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> docs/ecosistema_agentes.html</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> docs/comando.html (dashboard maestro)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> docs/estado_agentes.html (esta página)</div>
+        <div class="tool-item"><span class="ti-icon">✅</span> Identidad visual de marca definida</div>
+      </div>
+      <div class="tools-col todo">
+        <h4>⏳ Próximas tareas</h4>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Landing pages para clientes</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Banners y assets para campañas Meta</div>
+        <div class="tool-item"><span class="ti-icon">⏳</span> Dashboard de métricas en tiempo real</div>
+      </div>
+    </div>
+    <div class="where-lives">
+      <div class="wl-label">Cómo activarlo</div>
+      <span class="ok">✓</span> Instrucciones en: <span class="path">.agentes/antigravity/instrucciones.md</span><br>
+      <span class="ok">✓</span> Coordinación en: <span class="path">.agentes/coordinacion.md</span><br>
+      <span class="ok">✓</span> Se activa: hablándome de diseño en Claude Code
+    </div>
+  </div>
+
+  <!-- AGENTES PLANIFICADOS -->
+  <div class="agent-block planned">
+    <div class="ab-header">
+      <div class="ab-icon">📊</div>
+      <div class="ab-meta">
+        <div class="ab-name">Agente CRM Avanzado</div>
+        <div class="ab-role">PostgreSQL · Supabase · Alertas · LTV</div>
+        <span class="status-pill sp-planned"><span class="sp-dot"></span> Planificado — herramientas base listas</span>
+      </div>
+    </div>
+    <p class="ab-desc">Hoy el Agente Seba tiene <code>ver_leads</code> básico. El Agente CRM completo tendría: filtros por canal, alertas 48hs, reporte de conversión, LTV, búsqueda por nombre/teléfono. Listo para construir cuando activemos el Coordinador.</p>
+    <div class="where-lives">
+      <div class="wl-label">Qué se necesita para activarlo</div>
+      <span class="pend">⏳</span> Ampliar herramientas de CRM en <span class="path">agente_seba.js</span><br>
+      <span class="pend">⏳</span> Implementar routing en el Coordinador
+    </div>
+  </div>
+
+  <div class="agent-block planned" style="margin-bottom:60px;">
+    <div class="ab-header">
+      <div class="ab-icon">🎬</div>
+      <div class="ab-meta">
+        <div class="ab-name">Agente Contenido</div>
+        <div class="ab-role">HeyGen API · ElevenLabs · Groq · Posts IA</div>
+        <span class="status-pill sp-planned"><span class="sp-dot"></span> Planificado — APIs configuradas</span>
+      </div>
+    </div>
+    <p class="ab-desc">Genera posts, guiones de reels y videos HeyGen con avatar de Seba desde Telegram. Las APIs de HeyGen y ElevenLabs ya están configuradas. Necesita programar las herramientas específicas.</p>
+    <div class="where-lives">
+      <div class="wl-label">Qué se necesita para activarlo</div>
+      <span class="pend">⏳</span> Tool <span class="path">generar_guion(tema)</span> en agente_seba.js<br>
+      <span class="pend">⏳</span> Tool <span class="path">generar_video_heygen(guion)</span> llamando a HeyGen API<br>
+      <span class="pend">⏳</span> Implementar routing en el Coordinador
+    </div>
+  </div>
+
+  <!-- ═══ COWORK SECTION ═══ -->
+  <p class="sec-label">Sistema de trabajo</p>
+  <h2 class="sec-heading">¿Qué es el <span>CoWork IA</span> y cómo funciona hoy?</h2>
+
+  <div class="cowork-grid">
+    <div class="cw-card">
+      <div class="cw-icon">🤝</div>
+      <h3>¿Qué debería ser?</h3>
+      <p>Múltiples IAs trabajando en paralelo, cada una en su especialidad, coordinadas automáticamente sin que Seba tenga que intervenir. Una IA diseña, otra programa, otra gestiona leads — todo al mismo tiempo.</p>
+      <div class="cw-verdict part">⚠ Así está diseñado, pero aún no funciona así</div>
+    </div>
+    <div class="cw-card">
+      <div class="cw-icon">📁</div>
+      <h3>¿Qué existe hoy?</h3>
+      <p>Los archivos de coordinación existen: <code>.agentes/coordinacion.md</code>, instrucciones para Claude y Antigravity. Sirven para que yo recuerde el contexto entre sesiones y no empiece desde cero cada vez que abrís Claude Code.</p>
+      <div class="cw-verdict yes">✓ La memoria persistente SÍ funciona hoy</div>
+    </div>
+    <div class="cw-card">
+      <div class="cw-icon">🤖</div>
+      <h3>¿Son IAs distintas?</h3>
+      <p>No. Hoy soy yo (Claude Sonnet 4.6) en todos los roles: cuando programo soy "Claude Code", cuando diseño soy "Antigravity", cuando pienso la estrategia soy el "Coordinador". Es un solo modelo con múltiples roles.</p>
+      <div class="cw-verdict part">⚠ Un solo modelo, múltiples roles</div>
+    </div>
+    <div class="cw-card">
+      <div class="cw-icon">⚡</div>
+      <h3>¿Qué funciona autónomo?</h3>
+      <p>El Agente Seba en Telegram, ELI en WhatsApp, ARIA en Instagram y ARIA en la web — estos 4 corren solos en el VPS sin que yo esté presente. Ahí sí hay autonomía real con Groq y Gemini como cerebros.</p>
+      <div class="cw-verdict yes">✓ 4 agentes corren solos 24/7</div>
+    </div>
+  </div>
+
+  <!-- ═══ $5 PLAN ═══ -->
+  <div class="plan-box">
+    <h2>💰 La pregunta de los $5 — Explicación clara</h2>
+    <div class="plan-row">
+      <div class="plan-emoji">✅</div>
+      <div class="plan-text"><strong>Plan Pro de Claude ($20/mes)</strong> — Lo que tenés ahora. Cubre Claude Code (yo trabajando con vos), claude.ai web y la app móvil. Todos los tokens que usamos en estas conversaciones están incluidos.</div>
+    </div>
+    <div class="plan-row">
+      <div class="plan-emoji">💳</div>
+      <div class="plan-text"><strong>API de Anthropic ($5 de crédito)</strong> — Es para usar Claude desde código externo (n8n, scripts Python, apps). Por ejemplo, si quisieras que un workflow de n8n llame a Claude directamente. Es un pago por uso, no una suscripción fija.</div>
+    </div>
+    <div class="plan-row">
+      <div class="plan-emoji">🔑</div>
+      <div class="plan-text"><strong>¿Lo necesitás ahora?</strong> No urgente. Hoy el Agente Seba usa Groq (gratis), ELI y ARIA usan Gemini (gratis). Si en el futuro querés usar Claude como cerebro de un agente en n8n, ahí sería necesario.</div>
+    </div>
+    <div class="plan-row">
+      <div class="plan-emoji">🤝</div>
+      <div class="plan-text"><strong>¿Para el CoWork entre IAs?</strong> La API de Claude sería para automatizar que n8n llame a Claude sin que vos estés presente. Para que yo trabaje con vos manualmente, el plan Pro que pagás es suficiente.</div>
+    </div>
+  </div>
+
+  <!-- ═══ PRÓXIMOS PASOS ═══ -->
+  <p class="sec-label">Qué sigue</p>
+  <h2 class="sec-heading">Próximos pasos <span>concretos</span></h2>
+
+  <ul class="next-list mb-60">
+    <li>
+      <div class="nl-num">1</div>
+      <div>
+        <h4>Pruebas end-to-end de todos los agentes</h4>
+        <p>ELI: mensaje WhatsApp → calificación → email → Calendly. ARIA: DM Instagram → CRM. Agente Seba: instrucción técnica, CRM y contenido por Telegram. Formulario web → CRM.</p>
+      </div>
+    </li>
+    <li>
+      <div class="nl-num">2</div>
+      <div>
+        <h4>Primer reel y contenido Instagram</h4>
+        <p>Grabar con Xbox Game Bar (Win+Alt+R) usando el propio sistema como demo. El Agente Seba genera el guión — vos grabás y editás en CapCut.</p>
+      </div>
+    </li>
+    <li>
+      <div class="nl-num">3</div>
+      <div>
+        <h4>Publicación directa desde Telegram</h4>
+        <p>Conectar el sub-agente Contenido con la API de Instagram para que Seba pueda aprobar y publicar un reel o post directo desde Telegram sin abrir Instagram.</p>
+      </div>
+    </li>
+    <li>
+      <div class="nl-num">4</div>
+      <div>
+        <h4>Video HeyGen desde guión</h4>
+        <p>Conectar herramienta generar_video_heygen() en el Agente Seba. Las APIs de HeyGen y ElevenLabs ya están configuradas — es solo programar la tool.</p>
+      </div>
+    </li>
+  </ul>
+
+</div>
+
+<footer>
+  <p>AUTOMATÍZAME.UY — <span>Estado de Agentes v2.0</span> — 16 Abril 2026</p>
+</footer>
+
+</body>
+</html>
