@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automatízame — Centro de Comando</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070a;
+      --bg2: #080b10;
+      --card: rgba(255,255,255,0.04);
+      --card-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(0,242,255,0.3);
+      --primary: #00f2ff;
+      --secondary: #7000ff;
+      --accent: #ff00c8;
+      --green: #00ff88;
+      --orange: #ff8800;
+      --red: #ff4444;
+      --yellow: #ffcc00;
+      --text: #e0e6ed;
+      --muted: rgba(224,230,237,0.5);
+      --muted2: rgba(224,230,237,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5,7,10,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    .nav-brand {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--primary);
+      white-space: nowrap;
+      padding: 18px 0;
+      margin-right: 24px;
+      flex-shrink: 0;
+    }
+    .nav-tab {
+      padding: 18px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ─── PAGES ─── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ─── HEADER ─── */
+    .page-header {
+      text-align: center;
+      padding: 60px 20px 50px;
+      background: radial-gradient(ellipse at center top, rgba(112,0,255,0.12) 0%, transparent 65%);
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header .badge {
+      display: inline-block;
+      background: rgba(0,242,255,0.08);
+      border: 1px solid rgba(0,242,255,0.25);
+      color: var(--primary);
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .page-header h1 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .page-header p { color: var(--muted); font-size: 0.9rem; letter-spacing: 1px; }
+
+    /* ─── LAYOUT ─── */
+    .container { max-width: 1280px; margin: 0 auto; padding: 50px 24px; }
+    .section-label { font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 6px; }
+    .section-heading { font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700; margin-bottom: 32px; }
+    .section-heading span { color: var(--primary); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .mb-60 { margin-bottom: 60px; }
+    .mb-40 { margin-bottom: 40px; }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 26px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); background: var(--card-hover); }
+    .card.primary:hover { border-color: var(--primary); box-shadow: 0 16px 50px rgba(0,242,255,0.08); }
+    .card.green:hover   { border-color: var(--green);   box-shadow: 0 16px 50px rgba(0,255,136,0.08); }
+    .card.pink:hover    { border-color: var(--accent);  box-shadow: 0 16px 50px rgba(255,0,200,0.08); }
+    .card.orange:hover  { border-color: var(--orange);  box-shadow: 0 16px 50px rgba(255,136,0,0.08); }
+    .card.purple:hover  { border-color: var(--secondary); box-shadow: 0 16px 50px rgba(112,0,255,0.08); }
+    .card.yellow:hover  { border-color: var(--yellow);  box-shadow: 0 16px 50px rgba(255,204,0,0.08); }
+    .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
+    .card p  { font-size: 0.83rem; color: var(--muted); line-height: 1.65; }
+
+    /* ─── KPI STAT ─── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 48px; }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .kpi .val { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+    .kpi .lbl { font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .kpi.active .val  { color: var(--green); }
+    .kpi.builds .val  { color: var(--orange); }
+    .kpi.plans  .val  { color: var(--muted2); }
+    .kpi.tools  .val  { color: var(--primary); }
+    .kpi.models .val  { color: var(--accent); }
+
+    /* ─── STATUS BADGE ─── */
+    .badge-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.63rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 20px; margin-bottom: 14px;
+    }
+    .badge-status .dot { width: 5px; height: 5px; border-radius: 50%; }
+    .bs-live   { background: rgba(0,255,136,0.1); color: var(--green);  border: 1px solid rgba(0,255,136,0.2); }
+    .bs-live   .dot { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+    .bs-build  { background: rgba(255,136,0,0.1); color: var(--orange); border: 1px solid rgba(255,136,0,0.2); }
+    .bs-build  .dot { background: var(--orange); }
+    .bs-plan   { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+    .bs-plan   .dot { background: var(--muted2); }
+    .bs-ok     { background: rgba(0,242,255,0.08); color: var(--primary); border: 1px solid rgba(0,242,255,0.2); }
+    .bs-ok     .dot { background: var(--primary); box-shadow: 0 0 6px var(--primary); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+    /* ─── AGENT CARD ─── */
+    .agent-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .agent-card:hover { transform: translateY(-6px); }
+    .agent-card.t:hover { border-color: var(--primary); box-shadow: 0 20px 60px rgba(0,242,255,0.1); }
+    .agent-card.c:hover { border-color: var(--green);   box-shadow: 0 20px 60px rgba(0,255,136,0.1); }
+    .agent-card.m:hover { border-color: var(--accent);  box-shadow: 0 20px 60px rgba(255,0,200,0.1); }
+    .agent-card.i:hover { border-color: var(--orange);  box-shadow: 0 20px 60px rgba(255,136,0,0.1); }
+    .agent-card.a:hover { border-color: var(--secondary); box-shadow: 0 20px 60px rgba(112,0,255,0.1); }
+    .agent-card.coord:hover { border-color: var(--yellow); box-shadow: 0 20px 60px rgba(255,204,0,0.1); }
+
+    .agent-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .agent-icon {
+      width: 50px; height: 50px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+    .t .agent-icon { background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.2); }
+    .c .agent-icon { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); }
+    .m .agent-icon { background: rgba(255,0,200,0.1); border: 1px solid rgba(255,0,200,0.2); }
+    .i .agent-icon { background: rgba(255,136,0,0.1); border: 1px solid rgba(255,136,0,0.2); }
+    .a .agent-icon { background: rgba(112,0,255,0.1); border: 1px solid rgba(112,0,255,0.2); }
+    .coord .agent-icon { background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.2); }
+
+    .agent-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+    .t     .agent-info h3 { color: var(--primary); }
+    .c     .agent-info h3 { color: var(--green); }
+    .m     .agent-info h3 { color: var(--accent); }
+    .i     .agent-info h3 { color: var(--orange); }
+    .a     .agent-info h3 { color: #a855f7; }
+    .coord .agent-info h3 { color: var(--yellow); }
+    .agent-role { font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; }
+
+    .agent-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+
+    .caps { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+    .caps li { font-size: 0.8rem; display: flex; align-items: flex-start; gap: 7px; color: var(--text); line-height: 1.5; }
+    .caps li::before { content: '▸'; flex-shrink: 0; margin-top: 2px; }
+    .t     .caps li::before { color: var(--primary); }
+    .c     .caps li::before { color: var(--green); }
+    .m     .caps li::before { color: var(--accent); }
+    .i     .caps li::before { color: var(--orange); }
+    .a     .caps li::before { color: #a855f7; }
+    .coord .caps li::before { color: var(--yellow); }
+
+    /* ─── PROMPT BOX ─── */
+    .prompt-toggle {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 13px;
+      font-size: 0.73rem;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .prompt-toggle:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .prompt-toggle .arr { transition: transform 0.3s; }
+    .prompt-box {
+      display: none; margin-top: 10px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px;
+      position: relative;
+    }
+    .prompt-box.open { display: block; }
+    .prompt-box pre {
+      font-family: 'Courier New', monospace;
+      font-size: 0.71rem;
+      color: #a8d8b0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.75;
+    }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,242,255,0.1);
+      border: 1px solid rgba(0,242,255,0.2);
+      color: var(--primary);
+      font-size: 0.65rem;
+      padding: 3px 9px; border-radius: 6px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(0,242,255,0.2); }
+
+    /* ─── FLOW ─── */
+    .flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap; margin-bottom: 48px;
+    }
+    .fn {
+      text-align: center; padding: 18px 22px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 15px; min-width: 120px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .fn:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .fn.hl { border-color: rgba(0,242,255,0.3); background: rgba(0,242,255,0.04); }
+    .fn .fi { font-size: 1.8rem; margin-bottom: 6px; }
+    .fn .fl { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .fn .fn-name { font-size: 0.88rem; font-weight: 700; margin-top: 3px; }
+    .fn.hl .fn-name { color: var(--primary); }
+    .fa { font-size: 1.3rem; color: var(--muted); padding: 0 8px; flex-shrink: 0; }
+
+    /* ─── COORDINATOR CENTRAL ─── */
+    .coord-box {
+      background: linear-gradient(135deg, rgba(112,0,255,0.1), rgba(255,204,0,0.04));
+      border: 1px solid rgba(255,204,0,0.2);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 48px;
+      position: relative; overflow: hidden;
+    }
+    .coord-box::before {
+      content:''; position: absolute; top:-50%; left:-50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,204,0,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .coord-box .ci { font-size: 3rem; margin-bottom: 12px; }
+    .coord-box h2 { font-size: 1.4rem; font-weight: 800; color: var(--yellow); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .coord-box p  { color: var(--muted); font-size: 0.86rem; max-width: 640px; margin: 0 auto 20px; line-height: 1.7; }
+
+    /* ─── TABLE ─── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .data-table th {
+      text-align: left; padding: 12px 16px;
+      font-size: 0.68rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); font-weight: 600;
+    }
+    .data-table td {
+      padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .mono { font-family: 'Courier New', monospace; font-size: 0.75rem; color: var(--primary); }
+    .tag {
+      display: inline-block; font-size: 0.65rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 5px; margin: 1px 2px; letter-spacing: 0.5px;
+    }
+    .tag-cyan   { background: rgba(0,242,255,0.1); color: var(--primary); }
+    .tag-purple { background: rgba(112,0,255,0.15); color: #b085ff; }
+    .tag-green  { background: rgba(0,255,136,0.1); color: var(--green); }
+    .tag-orange { background: rgba(255,136,0,0.12); color: var(--orange); }
+    .tag-pink   { background: rgba(255,0,200,0.1); color: var(--accent); }
+    .tag-yellow { background: rgba(255,204,0,0.1); color: var(--yellow); }
+    .tag-muted  { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+    /* ─── INFRA ITEMS ─── */
+    .infra-item {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+    .infra-item:hover { border-color: rgba(0,242,255,0.15); }
+    .infra-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .infra-name { font-size: 0.88rem; font-weight: 700; }
+    .infra-url  { font-size: 0.73rem; color: var(--muted); margin-top: 2px; font-family: monospace; }
+    .infra-right { margin-left: auto; text-align: right; }
+    .infra-status { font-size: 0.7rem; font-weight: 600; }
+    .is-ok  { color: var(--green); }
+    .is-w   { color: var(--orange); }
+    .is-off { color: var(--red); }
+
+    /* ─── ROADMAP ─── */
+    .roadmap { display: flex; flex-direction: column; gap: 14px; }
+    .rm-item {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 20px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 14px;
+      transition: border-color 0.2s;
+    }
+    .rm-item:hover { border-color: rgba(0,242,255,0.15); }
+    .rm-step {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 800; flex-shrink: 0;
+    }
+    .rs-done { background: rgba(0,255,136,0.15); color: var(--green);  border: 1px solid rgba(0,255,136,0.3); }
+    .rs-now  { background: rgba(0,242,255,0.15); color: var(--primary); border: 1px solid rgba(0,242,255,0.3); }
+    .rs-next { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+    .rm-content h4 { font-size: 0.93rem; font-weight: 700; margin-bottom: 5px; }
+    .rm-content p  { font-size: 0.79rem; color: var(--muted); line-height: 1.55; }
+
+    /* ─── CHANNELS ─── */
+    .channels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 48px; }
+    @media(max-width:600px) { .channels-grid { grid-template-columns: 1fr; } }
+    .ch-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 24px; }
+    .ch-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .ch-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .ch-card li { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .ch-card li span { color: var(--text); }
+    .chk { color: var(--green); } .crx { color: var(--red); }
+
+    /* ─── TOKEN TABLE ─── */
+    .model-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .model-row:last-child { border-bottom: none; }
+    .model-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .model-info { flex: 1; }
+    .model-name { font-size: 0.86rem; font-weight: 700; margin-bottom: 2px; }
+    .model-id   { font-size: 0.68rem; color: var(--muted); font-family: monospace; }
+    .model-right { text-align: right; flex-shrink: 0; }
+    .model-usage { font-size: 0.8rem; font-weight: 600; }
+    .model-plan  { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+
+    /* ─── CREDENTIAL ROW ─── */
+    .cred-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .cred-row:hover { border-color: rgba(0,242,255,0.15); }
+    .cred-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .cred-name { font-size: 0.83rem; font-weight: 700; flex: 1; }
+    .cred-val  { font-size: 0.7rem; color: var(--muted); font-family: monospace; cursor: pointer; }
+    .cred-val:hover { color: var(--primary); }
+    .cred-tag  { flex-shrink: 0; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center; padding: 28px; color: var(--muted);
+      font-size: 0.72rem; letter-spacing: 2px;
+    }
+    footer span { color: var(--primary); }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:768px) {
+      .container { padding: 30px 16px; }
+      .page-header { padding: 40px 16px; }
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ NAV ═══════════════════════════════════ -->
+<nav>
+  <div class="nav-brand">⚡ AUTOMATÍZAME</div>
+  <div class="nav-tab active"    onclick="showPage('overview')">Resumen</div>
+  <div class="nav-tab"           onclick="window.location='/estado_agentes.html'">Estado Agentes</div>
+  <div class="nav-tab"           onclick="showPage('agentes')">Prompts &amp; Roles</div>
+  <div class="nav-tab"           onclick="showPage('infraestructura')">Infraestructura</div>
+  <div class="nav-tab"           onclick="showPage('modelos')">Modelos &amp; Tokens</div>
+  <div class="nav-tab"           onclick="showPage('credenciales')">Credenciales</div>
+  <div class="nav-tab"           onclick="showPage('roadmap')">Roadmap</div>
+</nav>
+
+<!-- ═══════════════════════════════ PAGE: OVERVIEW ════════════════════════════ -->
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <div class="badge">Centro de Comando — v2.0 · Abril 2026</div>
+    <h1>Automatízame Command</h1>
+    <p>Agencia de automatización con IA — Uruguay · Panel maestro de operaciones</p>
+  </div>
+
+  <div class="container">
+
+    <!-- KPIs -->
+    <div class="kpi-grid mb-60">
+      <div class="kpi active"><div class="val">3</div><div class="lbl">Agentes en vivo</div></div>
+      <div class="kpi builds"><div class="val">2</div><div class="lbl">En construcción</div></div>
+      <div class="kpi tools"><div class="val">38</div><div class="lbl">Workflows n8n</div></div>
+      <div class="kpi tools" style="--val-color:var(--primary)"><div class="val" style="color:var(--primary)">9</div><div class="lbl">Workflows activos</div></div>
+      <div class="kpi models"><div class="val">6</div><div class="lbl">Modelos IA activos</div></div>
+      <div class="kpi" style=""><div class="val" style="color:var(--yellow)" id="kpi-clientes">3</div><div class="lbl">Clientes activos</div></div>
+    </div>
+
+    <!-- KPIs en tiempo real — datos de DB -->
+    <div class="kpi-grid mb-60" id="kpi-realtime-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+      <div class="kpi" style="border-color:rgba(0,242,255,0.15);">
+        <div class="val" id="kpi-total-clientes" style="color:var(--primary)">—</div>
+        <div class="lbl">Total clientes</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(0,255,136,0.15);">
+        <div class="val" id="kpi-clientes-hoy" style="color:var(--green)">—</div>
+        <div class="lbl">Leads hoy</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(112,0,255,0.15);">
+        <div class="val" id="kpi-total-props" style="color:#b085ff">—</div>
+        <div class="lbl">Propiedades DB</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(255,136,0,0.15);">
+        <div class="val" id="kpi-props-hoy" style="color:var(--orange)">—</div>
+        <div class="lbl">Propiedades hoy</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(255,0,200,0.15);">
+        <div class="val" id="kpi-dueno-directo" style="color:var(--accent)">—</div>
+        <div class="lbl">Dueño directo</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(0,242,255,0.1);">
+        <div class="val" id="kpi-leads-inmo" style="color:var(--primary);font-size:1.6rem;">—</div>
+        <div class="lbl">Leads inmo</div>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:-48px;margin-bottom:48px;font-size:0.68rem;color:var(--muted2);">
+      <span id="kpi-last-update">cargando datos...</span>
+      &nbsp;·&nbsp;
+      <span id="kpi-ultimo-canal" style="color:var(--primary)"></span>
+    </div>
+
+    <!-- Estado rápido -->
+    <p class="section-label">Estado del sistema</p>
+    <h2 class="section-heading mb-40">Agentes <span>desplegados</span></h2>
+
+    <div class="grid-3 mb-60">
+
+      <div class="card primary">
+        <div class="badge-status bs-live"><span class="dot"></span> En vivo</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">📞</div>
+        <h3>ELI — Agente WhatsApp</h3>
+        <p>Cualificadora de leads. 6 fases de conversación. Transcripción de voz con Groq Whisper. Filtro patovica activo.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-cyan">WhatsApp API</span>
+          <span class="tag tag-purple">Groq Whisper</span>
+          <span class="tag tag-green">n8n activo</span>
+        </div>
+      </div>
+
+      <div class="card primary">
+        <div class="badge-status bs-live"><span class="dot"></span> En vivo</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">🌐</div>
+        <h3>ARIA Web — Chatbot Site</h3>
+        <p>Conserje rápida en el chatbot del sitio automatizameuy.com. Respuestas instantáneas a visitas web.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-cyan">Web widget</span>
+          <span class="tag tag-orange">Gemini</span>
+          <span class="tag tag-green">n8n activo</span>
+        </div>
+      </div>
+
+      <div class="card primary">
+        <div class="badge-status bs-live"><span class="dot"></span> En vivo</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">📸</div>
+        <h3>ARIA Instagram — DM Bot</h3>
+        <p>Bot de DMs de Instagram con botonera Meta API (botones tipo "button"). Versión V2 operativa.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-pink">Instagram Graph API</span>
+          <span class="tag tag-orange">Gemini</span>
+          <span class="tag tag-green">n8n activo</span>
+        </div>
+      </div>
+
+      <div class="card primary">
+        <div class="badge-status bs-live"><span class="dot"></span> En vivo</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">🤖</div>
+        <h3>Agente Seba — Telegram</h3>
+        <p>Asistente personal de Seba. Ejecuta comandos en el VPS: listar workflows, ver leads, estado de containers, reiniciar n8n.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-cyan">Telegram Bot</span>
+          <span class="tag tag-purple">Groq LLaMA</span>
+          <span class="tag tag-green">puerto 3131</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <div class="badge-status bs-build"><span class="dot"></span> En construcción</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">🏠</div>
+        <h3>Agente Inmobiliario</h3>
+        <p>Sistema de scraping MeLi + InfoCasas para Destino Abril. Matching automático leads ↔ propiedades.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-orange">Destino Abril</span>
+          <span class="tag tag-muted">Scrapers</span>
+          <span class="tag tag-muted">En desarrollo</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <div class="badge-status bs-build"><span class="dot"></span> En construcción</div>
+        <div style="font-size:1.6rem;margin-bottom:8px;">🎬</div>
+        <h3>Agente Contenido</h3>
+        <p>Genera posts, guiones de reels y videos HeyGen. Calendario editorial semanal automático.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag tag-purple">HeyGen API</span>
+          <span class="tag tag-pink">ElevenLabs</span>
+          <span class="tag tag-muted">Próximamente</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Flujo general -->
+    <p class="section-label">Arquitectura</p>
+    <h2 class="section-heading">Cómo fluye una <span>instrucción</span></h2>
+
+    <div class="flow mb-60">
+      <div class="fn hl">
+        <div class="fi">👨‍💼</div>
+        <div class="fl">Origen</div>
+        <div class="fn-name">Seba CEO</div>
+      </div>
+      <div class="fa">→</div>
+      <div class="fn">
+        <div class="fi">📱</div>
+        <div class="fl">Canal</div>
+        <div class="fn-name">Telegram / Claude</div>
+      </div>
+      <div class="fa">→</div>
+      <div class="fn hl">
+        <div class="fi">🧠</div>
+        <div class="fl">Router</div>
+        <div class="fn-name">Coordinador</div>
+      </div>
+      <div class="fa">→</div>
+      <div class="fn">
+        <div class="fi">⚡</div>
+        <div class="fl">Ejecutor</div>
+        <div class="fn-name">Sub-agente</div>
+      </div>
+      <div class="fa">→</div>
+      <div class="fn hl">
+        <div class="fi">✅</div>
+        <div class="fl">Resultado</div>
+        <div class="fn-name">Acción Real</div>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <p class="section-label">Accesos rápidos</p>
+    <h2 class="section-heading mb-40">Herramientas <span>principales</span></h2>
+    <div class="grid-4">
+      <a href="https://n8n.automatizameuy.com" target="_blank" style="text-decoration:none;">
+        <div class="card primary" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">⚙️</div>
+          <div style="font-weight:700;font-size:0.9rem;">n8n Workflows</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">n8n.automatizameuy.com</div>
+        </div>
+      </a>
+      <a href="https://db.automatizameuy.com" target="_blank" style="text-decoration:none;">
+        <div class="card green" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">🗄️</div>
+          <div style="font-weight:700;font-size:0.9rem;">Supabase / CRM</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">db.automatizameuy.com</div>
+        </div>
+      </a>
+      <a href="https://72.62.13.132:3000" target="_blank" style="text-decoration:none;">
+        <div class="card purple" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">🖥️</div>
+          <div style="font-weight:700;font-size:0.9rem;">Easypanel VPS</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">72.62.13.132:3000</div>
+        </div>
+      </a>
+      <a href="https://automatizameuy.com" target="_blank" style="text-decoration:none;">
+        <div class="card pink" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">🌐</div>
+          <div style="font-weight:700;font-size:0.9rem;">Sitio Web</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">automatizameuy.com</div>
+        </div>
+      </a>
+      <a href="https://calendly.com/sebaagradeno/30min" target="_blank" style="text-decoration:none;">
+        <div class="card yellow" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">📅</div>
+          <div style="font-weight:700;font-size:0.9rem;">Calendly</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Demo 30 min</div>
+        </div>
+      </a>
+      <a href="https://instagram.com/automatizame_uy" target="_blank" style="text-decoration:none;">
+        <div class="card pink" style="text-align:center;cursor:pointer;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">📸</div>
+          <div style="font-weight:700;font-size:0.9rem;">Instagram</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">@automatizame_uy</div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAGE: AGENTES ════════════════════════════ -->
+<div class="page" id="page-agentes">
+  <div class="page-header">
+    <div class="badge">Blueprint v2.0 — Multi-agente orquestado</div>
+    <h1>Ecosistema de Agentes</h1>
+    <p>Arquitectura completa con prompts maestros para cada especialista</p>
+  </div>
+
+  <div class="container">
+
+    <!-- COORDINADOR -->
+    <p class="section-label">Cerebro central</p>
+    <h2 class="section-heading">El <span>Coordinador</span></h2>
+
+    <div class="coord-box mb-60">
+      <div class="ci">🧠</div>
+      <h2>Agente Coordinador</h2>
+      <p>El router central. Recibe cada instrucción de Seba, detecta la intención y delega al agente correcto. No ejecuta acciones directamente — su única función es enrutar con precisión y máxima velocidad.</p>
+      <div class="prompt-toggle" onclick="togglePrompt(this)" style="max-width:480px;margin:0 auto;">
+        <span>Ver prompt maestro del Coordinador</span>
+        <span class="arr">▾</span>
+      </div>
+      <div class="prompt-box" style="max-width:600px;margin:10px auto 0;">
+        <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+        <pre>Sos el Agente Coordinador de Automatizame.uy.
+Sos el primer punto de contacto con Seba (el CEO).
+
+TU ÚNICA FUNCIÓN: entender la intención y decidir a qué agente delegar.
+
+AGENTES DISPONIBLES:
+- tecnico     → servidor, n8n, Docker, base de datos, logs
+- crm         → leads, clientes, estados, reportes de conversión
+- contenido   → posts, reels, guiones HeyGen, copy para ads
+- inmobiliario→ propiedades Destino Abril, scrapers, matching
+- antigravity → diseño, frontend HTML/CSS, dashboards, marca
+
+REGLAS DE ENRUTAMIENTO:
+- Detectá palabras clave: "workflow", "n8n", "servidor", "Docker" → tecnico
+- "lead", "cliente", "contacto", "CRM", "ventas" → crm
+- "post", "reel", "contenido", "guion", "video", "copy" → contenido
+- "propiedad", "inmueble", "MeLi", "Destino Abril" → inmobiliario
+- "diseño", "web", "página", "dashboard", "logo" → antigravity
+- Si no queda claro, respondé brevemente pidiendo más detalle.
+- Si podés responderlo vos directamente (pregunta simple), hacelo.
+
+FORMATO DE RESPUESTA:
+{"agente": "nombre_agente", "instruccion": "instruccion limpia para el sub-agente"}
+
+No expliques tu razonamiento. Solo el JSON o la respuesta directa.</pre>
+      </div>
+    </div>
+
+    <!-- GRID DE AGENTES -->
+    <p class="section-label">Sub-agentes especialistas</p>
+    <h2 class="section-heading">Los <span>6 especialistas</span></h2>
+
+    <div class="grid-3 mb-60" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));">
+
+      <!-- TÉCNICO -->
+      <div class="agent-card t">
+        <div class="badge-status bs-live"><span class="dot"></span> En producción</div>
+        <div class="agent-header">
+          <div class="agent-icon">🔧</div>
+          <div class="agent-info">
+            <h3>Agente Técnico</h3>
+            <div class="agent-role">Servidor · n8n · Docker · Base de datos</div>
+          </div>
+        </div>
+        <p class="agent-desc">Controla toda la infraestructura. Acceso directo al VPS, n8n, PostgreSQL y containers Docker. Es el agente más poderoso del sistema.</p>
+        <ul class="caps">
+          <li>Listar / activar / desactivar workflows en n8n</li>
+          <li>Ver estado de containers Docker (ps, logs)</li>
+          <li>Consultar y ejecutar queries en PostgreSQL</li>
+          <li>Reiniciar servicios (n8n, Supabase, etc.)</li>
+          <li>Ver logs de ejecuciones fallidas</li>
+          <li>Monitorear uso de RAM y CPU del servidor</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver prompt maestro</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Sos el Agente Técnico de Automatizame.uy.
+Tenés acceso completo al servidor VPS Hostinger, n8n y PostgreSQL.
+
+IDENTIDAD:
+- Empresa: Automatizame.uy (agencia de automatización con IA)
+- CEO: Sebastián Agradeño
+- VPS: srv1484274.hstgr.cloud / IP: 72.62.13.132
+- n8n URL: https://n8n.automatizameuy.com
+- DB: automatizacion1 (PostgreSQL, user: postgres)
+- Docker container DB: automatizacion1_data-base-n8n.1.5rmh7n97cz90p6gxks9hv195w
+
+CAPACIDADES:
+- listar_workflows: lista todos los workflows con estado activo/inactivo
+- activar_workflow(nombre): activa workflow por nombre parcial
+- desactivar_workflow(nombre): desactiva workflow por nombre parcial
+- ver_logs(workflow): últimas 10 ejecuciones de un workflow
+- estado_servidor: containers Docker + uso de RAM
+- reiniciar_n8n: reinicia el servicio n8n con docker service update
+- query_db(sql): ejecuta SELECT en la base de datos
+- reiniciar_servicio(nombre): reinicia cualquier servicio Docker
+
+REGLAS:
+- Antes de acciones destructivas (borrar, reiniciar en horario pico) avisá a Seba
+- Si un workflow falla sistemáticamente, revisá los logs antes de responder
+- Respondé con qué hiciste y el resultado concreto (no más de 8 líneas)
+- Si hay un error, pasá el mensaje exacto sin inventar
+- Seba está en el celular: sé breve, concreto y sin relleno
+
+FORMATO DE ACCIÓN:
+{"accion": "nombre_accion", "parametros": {...}}</pre>
+        </div>
+      </div>
+
+      <!-- CRM -->
+      <div class="agent-card c">
+        <div class="badge-status bs-live"><span class="dot"></span> En producción</div>
+        <div class="agent-header">
+          <div class="agent-icon">📊</div>
+          <div class="agent-info">
+            <h3>Agente CRM</h3>
+            <div class="agent-role">Leads · Clientes · Conversión · Seguimiento</div>
+          </div>
+        </div>
+        <p class="agent-desc">Maneja todos los contactos y leads de la agencia. Consulta, filtra, actualiza estados y envía alertas de leads sin contactar.</p>
+        <ul class="caps">
+          <li>Ver últimos leads con canal de origen</li>
+          <li>Filtrar por canal (WhatsApp, Instagram, Web)</li>
+          <li>Cambiar estado: nuevo → contactado → cerrado</li>
+          <li>Reporte de conversión semanal/mensual</li>
+          <li>Buscar lead por nombre o teléfono</li>
+          <li>Alertar leads sin contactar hace más de 48hs</li>
+          <li>Ver ticket promedio y LTV por cliente</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver prompt maestro</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Sos el Agente CRM de Automatizame.uy.
+Manejás todos los leads y clientes de la agencia.
+
+IDENTIDAD:
+- DB: tabla "clientes" en PostgreSQL (automatizacion1)
+- Campos clave: nombre, whatsapp, estado, canal_origen, created_at
+- Estados posibles: nuevo, contactado, demo_agendada, cerrado, perdido
+- Canales: whatsapp, instagram, web, referido
+
+CAPACIDADES:
+- ver_leads(limite, canal): últimos N leads, filtrado por canal opcional
+- buscar_lead(texto): busca por nombre, teléfono o email
+- cambiar_estado(id, estado_nuevo): actualiza estado de un lead
+- reporte_conversion: % leads por estado y canal de la semana
+- alertas_48h: leads en estado "nuevo" sin contactar hace más de 48hs
+- ver_cliente(nombre): ficha completa de un cliente
+- estadisticas_diarias: nuevos leads hoy vs ayer
+
+REGLAS:
+- NUNCA borres registros, solo cambiá estados
+- Si hay leads sin contactar +48hs, mencionalo primero aunque no te lo pregunten
+- Los reportes van en formato lista simple, no tablas complejas
+- Siempre indicá el canal de origen al mostrar un lead
+- Si Seba pregunta "cómo vamos", mostrá: leads hoy, leads sin contactar, tasa de respuesta
+
+ALERTA AUTOMÁTICA:
+Cada vez que te activen, revisá primero si hay leads +48hs sin contactar y avisá si los hay.</pre>
+        </div>
+      </div>
+
+      <!-- CONTENIDO -->
+      <div class="agent-card m">
+        <div class="badge-status bs-build"><span class="dot"></span> En construcción</div>
+        <div class="agent-header">
+          <div class="agent-icon">🎬</div>
+          <div class="agent-info">
+            <h3>Agente Contenido</h3>
+            <div class="agent-role">Posts · Reels · Copy · HeyGen · Calendario</div>
+          </div>
+        </div>
+        <p class="agent-desc">Genera todo el contenido de redes sociales. Posts, guiones, copy para ads, videos con HeyGen y calendario editorial semanal.</p>
+        <ul class="caps">
+          <li>Ideas y borradores de posts para Instagram/LinkedIn</li>
+          <li>Guiones para reels con gancho de 3 segundos</li>
+          <li>Guiones para videos con avatar HeyGen de Seba</li>
+          <li>Copy para ads de Meta (headline + body)</li>
+          <li>Calendario editorial semanal completo</li>
+          <li>Adaptar casos reales de clientes en contenido</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver prompt maestro</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Sos el Agente de Contenido de Automatizame.uy.
+
+MISIÓN: Posicionar a Seba como el referente número uno de automatización
+con IA en Uruguay. Cada pieza de contenido debe generar autoridad real,
+no humo de marketing.
+
+IDENTIDAD DE MARCA:
+- Empresa: Automatizame.uy — agencia de automatización con IA
+- CEO: Sebastián Agradeño — uruguayo, directo, experto técnico
+- Tono: profesional pero cercano, español rioplatense
+- Diferenciador: resultados concretos con números reales
+- Estética visual: dark mode, cyan/violeta, futurista pero accesible
+
+CANALES:
+- Instagram (@automatizame_uy): reels educativos + posts de casos
+- LinkedIn: artículos de autoridad y resultados de clientes
+- Meta Ads: captación de leads para demo
+
+CAPACIDADES:
+- post_instagram(tema): post completo con caption + hashtags
+- reel_guion(tema): guion con gancho 3s, desarrollo, CTA
+- heygen_guion(tema): guion para avatar IA de Seba, max 90s
+- calendario_editorial(semana): 7 días de contenido planificado
+- copy_ad(objetivo): headline + body text para Meta Ads
+- adaptar_caso(descripcion): convierte un caso real en contenido
+
+REGLAS:
+- Nada de frases genéricas tipo "en el mundo actual..." — directo al grano
+- En reels: primer segundo = gancho con pregunta o afirmación provocadora
+- Siempre incluir CTA concreto (agendar demo, responder DM, link bio)
+- Usar números reales cuando Seba los provea (ej: "ahorra 4hs/semana")
+- Los videos HeyGen no superan 90 segundos
+- Estilo rioplatense: vos, che, dale, para nada de tuteos
+
+HERRAMIENTAS DE PRODUCCIÓN:
+- HeyGen API: genera video con avatar de Seba (ID: ver credenciales)
+- ElevenLabs: voz IA femenina para narraciones (ID: ver credenciales)
+- Voice ID Seba (HeyGen): ver panel de credenciales</pre>
+        </div>
+      </div>
+
+      <!-- INMOBILIARIO -->
+      <div class="agent-card i">
+        <div class="badge-status bs-live"><span class="dot"></span> En producción</div>
+        <div class="agent-header">
+          <div class="agent-icon">🏠</div>
+          <div class="agent-info">
+            <h3>Agente Inmobiliario</h3>
+            <div class="agent-role">Destino Abril · Scrapers · Matching</div>
+          </div>
+        </div>
+        <p class="agent-desc">Especialista en el negocio inmobiliario del cliente Destino Abril. Gestiona captación, scrapers MeLi/InfoCasas y matching lead ↔ propiedad.</p>
+        <ul class="caps">
+          <li>Ver propiedades captadas por fuente (MeLi, InfoCasas)</li>
+          <li>Ver leads y ejecutar matching automático</li>
+          <li>Estadísticas de captación por fuente y zona</li>
+          <li>Activar / desactivar scrapers específicos</li>
+          <li>Alertas de nuevas propiedades con criterios del lead</li>
+          <li>Reporte semanal de propiedades vs leads</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver prompt maestro</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Sos el Agente Inmobiliario especializado en el cliente Destino Abril.
+Operás en Uruguay, mercado de alquileres y compra-venta en Montevideo.
+
+CLIENTE: Destino Abril — agencia inmobiliaria
+SISTEMA: Scrapers de MercadoLibre Inmuebles + InfoCasas
+DB: tabla "propiedades" + tabla "leads_inmobiliarios" en PostgreSQL
+
+CAPACIDADES:
+- ver_propiedades(zona, tipo): lista propiedades captadas con filtros
+- ver_leads_inmobiliarios(estado): leads inmobiliarios por estado
+- ejecutar_matching(lead_id): encuentra propiedades compatibles con un lead
+- estadisticas_captacion: propiedades nuevas por fuente esta semana
+- activar_scraper(fuente): activa scraper de MeLi o InfoCasas
+- desactivar_scraper(fuente): desactiva scraper
+- nueva_alerta(lead_id, criterios): crea alerta de nueva propiedad para lead
+
+REGLAS:
+- Precios siempre en USD, indicarlo explícitamente
+- El matching prioriza: 1) zona exacta 2) presupuesto ±15% 3) tipo de inmueble
+- NUNCA compartir datos personales de propietarios por Telegram
+- Si no hay match exacto, sugerir el más cercano con nota de diferencia
+- En estadísticas, mostrar: total captadas, nuevas hoy, con match disponible
+- Si hay propiedades sin procesar hace más de 24hs, avisar
+
+FORMATO DE MATCHING:
+📍 Zona: [barrio]
+💰 Precio: USD [monto] (presupuesto lead: USD [rango])
+🏠 Tipo: [apartamento/casa/local]
+🔗 Fuente: MeLi/InfoCasas | ID: [id]</pre>
+        </div>
+      </div>
+
+      <!-- ANTIGRAVITY -->
+      <div class="agent-card a">
+        <div class="badge-status bs-live"><span class="dot"></span> Activo</div>
+        <div class="agent-header">
+          <div class="agent-icon">🎨</div>
+          <div class="agent-info">
+            <h3>Antigravity</h3>
+            <div class="agent-role">Diseño · Frontend · Marca · Dashboards</div>
+          </div>
+        </div>
+        <p class="agent-desc">El agente de diseño premium. Crea y mantiene interfaces web, dashboards visuales y todos los assets de la marca Automatizame.</p>
+        <ul class="caps">
+          <li>Crear y actualizar páginas HTML/CSS del sitio</li>
+          <li>Diseñar dashboards de métricas (como este)</li>
+          <li>Assets visuales para campañas de marketing</li>
+          <li>Mantener y evolucionar la identidad visual</li>
+          <li>Coordinar deploys con el agente técnico</li>
+          <li>Prototipos de landing pages para clientes</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver prompt maestro</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Sos Antigravity, el agente de diseño de Automatizame.uy.
+Tu trabajo es hacer que todo lo que Seba muestra se vea de clase mundial.
+
+IDENTIDAD VISUAL DE MARCA:
+- Paleta: fondo #05070a, primary #00f2ff (cyan), secondary #7000ff (violeta)
+- Acentos: #ff00c8 (magenta), #00ff88 (verde), #ff8800 (naranja)
+- Tipografía: Outfit (Google Fonts) — pesos 300, 400, 600, 800
+- Estilo: dark mode premium, glassmorphism, bordes sutiles
+- Efectos: gradientes radiales, hover con glow, animaciones suaves
+- NO: colores planos, diseños planos, sans-serif genéricos
+
+CAPACIDADES:
+- crear_pagina(tipo): landing, dashboard, blog post, portfolio
+- actualizar_seccion(pagina, seccion, contenido): modifica sección específica
+- crear_componente(tipo): card, table, chart, modal, nav
+- assets_marketing(tipo): banner, story, carrusel Instagram
+- deploy_preview: genera versión para revisar antes de subir al VPS
+
+REGLAS:
+- Todo diseño es MOBILE-FIRST. Testeá breakpoints en 375px y 768px
+- Cero diseños mediocres. Si no es premium, no sale.
+- Para cambios grandes al sitio principal: siempre mostrar preview primero
+- Coordinar con agente técnico para el deploy final al VPS
+- Los dashboards internos van en /docs/ del repositorio
+- Los dashboards públicos van en /var/www/html/ del VPS
+
+STACK: HTML5 + CSS3 vanilla (sin frameworks externos salvo Google Fonts)
+DEPLOY: scp al VPS + commit al repo GitHub</pre>
+        </div>
+      </div>
+
+      <!-- CLAUDE CODE -->
+      <div class="agent-card" style="border-color:rgba(112,0,255,0.15);">
+        <div class="badge-status bs-ok"><span class="dot"></span> Terminal activo</div>
+        <div class="agent-header">
+          <div class="agent-icon" style="background:rgba(112,0,255,0.1);border:1px solid rgba(112,0,255,0.2);">💻</div>
+          <div class="agent-info">
+            <h3 style="color:#a855f7;">Claude Code</h3>
+            <div class="agent-role">Desarrollo · SSH · Git · Código complejo</div>
+          </div>
+        </div>
+        <p class="agent-desc">El motor de desarrollo con acceso SSH directo al VPS. Para tareas que requieren editar código, hacer deploy, o resolver bugs complejos desde la PC.</p>
+        <ul class="caps" style="--bullet-color:#a855f7;">
+          <li>Editar código directamente en el repositorio</li>
+          <li>Deploy al VPS vía SSH</li>
+          <li>Debugear workflows complejos de n8n</li>
+          <li>Crear y modificar agentes completos</li>
+          <li>Git: commits, push, branches</li>
+          <li>Ejecutar comandos bash en el servidor</li>
+        </ul>
+        <div class="prompt-toggle" onclick="togglePrompt(this)">
+          <span>Ver contexto de trabajo</span><span class="arr">▾</span>
+        </div>
+        <div class="prompt-box">
+          <button class="copy-btn" onclick="copyPrompt(this)">Copiar</button>
+          <pre>Contexto de trabajo — Claude Code + Automatizame.uy
+
+ACCESO SSH:
+ssh -i C:/Users/usuario/.ssh/id_ed25519 root@srv1484274.hstgr.cloud
+
+REPOSITORIO:
+d:/AGENCIA MASTER/automatizame (local)
+GitHub + Hostinger autodeploy para el sitio web
+
+SERVICIOS EN EL VPS:
+- n8n: docker service automatizacion1_n8n (puerto 5678 interno)
+- DB:  automatizacion1_data-base-n8n.1.5rmh7n97cz90p6gxks9hv195w
+- Agente Seba: /root/agente-seba/ (node, puerto 3131)
+- n8n API Key: eyJhbGci... (ver credenciales)
+
+WORKFLOW AGENTE SEBA (n8n ID: 3ZgiLLQCNb1yiFgC):
+Telegram Trigger → HTTP POST 172.17.0.1:3131 → respuesta por Telegram
+
+REGLAS DE TRABAJO:
+- Leer el archivo antes de editar
+- No crear archivos innecesarios
+- Para deploys al VPS: scp + ssh
+- Commits solo cuando Seba los pide explícitamente
+- n8n principal ≠ n8n-v2 (no confundir)</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CANALES -->
+    <p class="section-label">Canales de acceso</p>
+    <h2 class="section-heading">Cómo dar <span>instrucciones</span></h2>
+
+    <div class="channels-grid mb-60">
+      <div class="ch-card">
+        <h3>📱 Telegram <small style="font-size:0.68rem;color:var(--green);margin-left:8px;">24/7 · Sin PC</small></h3>
+        <ul>
+          <li><span class="chk">✓</span><span>Comandos rápidos desde el celular</span></li>
+          <li><span class="chk">✓</span><span>Disponible siempre, autónomo en el VPS</span></li>
+          <li><span class="chk">✓</span><span>Ejecuta acciones reales en el servidor</span></li>
+          <li><span class="chk">✓</span><span>Ve leads, workflows, containers Docker</span></li>
+          <li><span class="chk">✓</span><span>Reinicia n8n, activa/desactiva workflows</span></li>
+          <li><span class="crx">✗</span><span>No puede editar código fuente</span></li>
+          <li><span class="crx">✗</span><span>No puede hacer deploy ni commits</span></li>
+        </ul>
+      </div>
+      <div class="ch-card">
+        <h3>💻 Claude Code <small style="font-size:0.68rem;color:var(--primary);margin-left:8px;">Máximo poder · Requiere PC</small></h3>
+        <ul>
+          <li><span class="chk">✓</span><span>Acceso SSH directo al servidor</span></li>
+          <li><span class="chk">✓</span><span>Crea y edita código, workflows, agentes</span></li>
+          <li><span class="chk">✓</span><span>Tareas técnicas complejas de cualquier tipo</span></li>
+          <li><span class="chk">✓</span><span>Git, deploy, configuración de infraestructura</span></li>
+          <li><span class="chk">✓</span><span>Diseño y construcción de dashboards como este</span></li>
+          <li><span class="crx">✗</span><span>Requiere tener la PC abierta</span></li>
+          <li><span class="crx">✗</span><span>No corre solo en segundo plano</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAGE: INFRAESTRUCTURA ═══════════════════ -->
+<div class="page" id="page-infraestructura">
+  <div class="page-header">
+    <div class="badge">VPS Hostinger · Docker Swarm · n8n</div>
+    <h1>Infraestructura</h1>
+    <p>Stack técnico completo — servicios activos y configuración del sistema</p>
+  </div>
+
+  <div class="container">
+
+    <p class="section-label">Servicios en línea</p>
+    <h2 class="section-heading mb-40">Estado del <span>servidor</span></h2>
+
+    <div class="mb-60">
+      <div class="infra-item">
+        <div class="infra-icon">⚙️</div>
+        <div>
+          <div class="infra-name">n8n — Automatizaciones</div>
+          <div class="infra-url">https://n8n.automatizameuy.com · container: automatizacion1_n8n</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px;">38 workflows · 9 activos</div>
+        </div>
+      </div>
+      <div class="infra-item">
+        <div class="infra-icon">🗄️</div>
+        <div>
+          <div class="infra-name">PostgreSQL — Base de datos n8n</div>
+          <div class="infra-url">container: automatizacion1_data-base-n8n · DB: automatizacion1 · user: postgres</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+        </div>
+      </div>
+      <div class="infra-item">
+        <div class="infra-icon">🤖</div>
+        <div>
+          <div class="infra-name">Agente Seba — Servidor Node.js</div>
+          <div class="infra-url">/root/agente-seba/agente_seba.js · puerto 3131 · run.sh</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px;">n8n webhook → 172.17.0.1:3131</div>
+        </div>
+      </div>
+      <div class="infra-item">
+        <div class="infra-icon">🌐</div>
+        <div>
+          <div class="infra-name">Supabase — CRM y Storage</div>
+          <div class="infra-url">https://db.automatizameuy.com · PostgreSQL managed</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+        </div>
+      </div>
+      <div class="infra-item">
+        <div class="infra-icon">🖥️</div>
+        <div>
+          <div class="infra-name">Easypanel — Panel de control VPS</div>
+          <div class="infra-url">https://72.62.13.132:3000 · Hostinger VPS</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+        </div>
+      </div>
+      <div class="infra-item">
+        <div class="infra-icon">🌍</div>
+        <div>
+          <div class="infra-name">Sitio Web — automatizameuy.com</div>
+          <div class="infra-url">GitHub repo + Hostinger autodeploy · branch: main</div>
+        </div>
+        <div class="infra-right">
+          <div class="infra-status is-ok">● Activo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stack técnico -->
+    <p class="section-label">Stack de tecnologías</p>
+    <h2 class="section-heading mb-40">Tecnologías <span>utilizadas</span></h2>
+
+    <div class="grid-3 mb-60">
+      <div class="card primary">
+        <div style="font-size:1.6rem;margin-bottom:10px;">⚙️</div>
+        <h3>Automatización</h3>
+        <p>n8n self-hosted en Docker Swarm. 38 workflows, 9 activos. Maneja todos los flujos: leads, agentes, scrapers, notificaciones.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-cyan">n8n</span>
+          <span class="tag tag-muted">Docker Swarm</span>
+          <span class="tag tag-muted">PostgreSQL</span>
+        </div>
+      </div>
+      <div class="card green">
+        <div style="font-size:1.6rem;margin-bottom:10px;">💬</div>
+        <h3>Comunicaciones</h3>
+        <p>WhatsApp Cloud API + Instagram Graph API para agentes. Telegram Bot API para el asistente de Seba. Node.js en servidor.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-green">WhatsApp API</span>
+          <span class="tag tag-pink">Instagram API</span>
+          <span class="tag tag-cyan">Telegram</span>
+        </div>
+      </div>
+      <div class="card orange">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🧠</div>
+        <h3>Inteligencia Artificial</h3>
+        <p>Groq para velocidad y voz. Gemini para conversaciones largas. Claude para desarrollo. HeyGen + ElevenLabs para video/audio.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-purple">Groq</span>
+          <span class="tag tag-orange">Gemini</span>
+          <span class="tag tag-cyan">Claude</span>
+        </div>
+      </div>
+      <div class="card purple">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🎥</div>
+        <h3>Contenido IA</h3>
+        <p>HeyGen genera videos con el avatar de Seba CEO. ElevenLabs crea audios con voz femenina premium para presentaciones.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-purple">HeyGen</span>
+          <span class="tag tag-pink">ElevenLabs</span>
+          <span class="tag tag-muted">DALL-E</span>
+        </div>
+      </div>
+      <div class="card green">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🗃️</div>
+        <h3>Datos y CRM</h3>
+        <p>Supabase (PostgreSQL managed) para el CRM de clientes. PostgreSQL en Docker para los datos de n8n y workflows.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-green">Supabase</span>
+          <span class="tag tag-cyan">PostgreSQL</span>
+          <span class="tag tag-muted">SQL</span>
+        </div>
+      </div>
+      <div class="card pink">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🚀</div>
+        <h3>Deploy y DevOps</h3>
+        <p>VPS Hostinger con Easypanel. Docker Swarm para orquestación. GitHub para versionado con autodeploy a Hostinger.</p>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-muted">Hostinger VPS</span>
+          <span class="tag tag-muted">GitHub</span>
+          <span class="tag tag-orange">Easypanel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workflows activos -->
+    <p class="section-label">n8n workflows</p>
+    <h2 class="section-heading mb-40">Workflows <span>clave</span></h2>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:60px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Workflow</th>
+            <th>Estado</th>
+            <th>Función</th>
+            <th>Canal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Agente Seba Bot v2</strong></td>
+            <td><span class="badge-status bs-live" style="margin:0;"><span class="dot"></span> Activo</span></td>
+            <td>Recibe mensaje Telegram → llama agente puerto 3131</td>
+            <td><span class="tag tag-cyan">Telegram</span></td>
+          </tr>
+          <tr>
+            <td><strong>ELI — WhatsApp Agente</strong></td>
+            <td><span class="badge-status bs-live" style="margin:0;"><span class="dot"></span> Activo</span></td>
+            <td>Cualificación de leads por WhatsApp con 6 fases</td>
+            <td><span class="tag tag-green">WhatsApp</span></td>
+          </tr>
+          <tr>
+            <td><strong>ARIA Instagram V2</strong></td>
+            <td><span class="badge-status bs-live" style="margin:0;"><span class="dot"></span> Activo</span></td>
+            <td>DMs de Instagram con botonera Meta API</td>
+            <td><span class="tag tag-pink">Instagram</span></td>
+          </tr>
+          <tr>
+            <td><strong>ARIA Web Chatbot</strong></td>
+            <td><span class="badge-status bs-live" style="margin:0;"><span class="dot"></span> Activo</span></td>
+            <td>Chatbot del sitio web automatizameuy.com</td>
+            <td><span class="tag tag-muted">Web</span></td>
+          </tr>
+          <tr>
+            <td><strong>Leads desde Web</strong></td>
+            <td><span class="badge-status bs-build" style="margin:0;"><span class="dot"></span> Inactivo</span></td>
+            <td>Procesa formulario web → CRM (webhook-leads-v4)</td>
+            <td><span class="tag tag-muted">Web form</span></td>
+          </tr>
+          <tr>
+            <td><strong>Destino Abril — Captación</strong></td>
+            <td><span class="badge-status bs-build" style="margin:0;"><span class="dot"></span> Inactivo</span></td>
+            <td>Todo listo, solo activar para campañas inmobiliarias</td>
+            <td><span class="tag tag-orange">Meta Ads</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAGE: MODELOS ════════════════════════════ -->
+<div class="page" id="page-modelos">
+  <div class="page-header">
+    <div class="badge">6 modelos activos · Tokens y costos</div>
+    <h1>Modelos &amp; Tokens</h1>
+    <p>Todos los modelos IA utilizados en el ecosistema — uso, costo y propósito</p>
+  </div>
+
+  <div class="container">
+
+    <p class="section-label">Inteligencia artificial</p>
+    <h2 class="section-heading mb-40">Modelos en <span>uso activo</span></h2>
+
+    <!-- GROQ -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:rgba(112,0,255,0.15);border:1px solid rgba(112,0,255,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">⚡</div>
+        <div style="flex:1;">
+          <div style="font-size:1rem;font-weight:700;color:#b085ff;">Groq Cloud</div>
+          <div style="font-size:0.72rem;color:var(--muted);">api.groq.com · Free tier</div>
+        </div>
+        <span class="tag tag-green">Gratis</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">llama-3.3-70b-versatile</div>
+          <div style="font-size:0.84rem;font-weight:600;color:#b085ff;">Agente Seba (Telegram)</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Interpreta instrucciones → JSON de acción</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-purple">200 req/min</span> <span class="tag tag-muted">6000 tokens/min</span></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">whisper-large-v3-turbo</div>
+          <div style="font-size:0.84rem;font-weight:600;color:#b085ff;">ELI — Transcripción de voz</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Convierte audios de WhatsApp a texto</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-purple">Audio → texto</span> <span class="tag tag-muted">Español</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEMINI -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:rgba(255,136,0,0.12);border:1px solid rgba(255,136,0,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🔮</div>
+        <div style="flex:1;">
+          <div style="font-size:1rem;font-weight:700;color:var(--orange);">Google Gemini</div>
+          <div style="font-size:0.72rem;color:var(--muted);">generativelanguage.googleapis.com</div>
+        </div>
+        <span class="tag tag-green">Free tier</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">gemini-2.0-flash</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--orange);">ARIA Web + ARIA Instagram</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Conversaciones de leads en web e Instagram DMs</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-orange">1M tokens contexto</span> <span class="tag tag-muted">Multimodal</span></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">gemini-2.0-flash (vision)</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--orange);">ELI — Análisis de imágenes</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Procesa imágenes enviadas por WhatsApp</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-orange">Vision</span> <span class="tag tag-muted">WhatsApp media</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLAUDE -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:rgba(0,242,255,0.1);border:1px solid rgba(0,242,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
+        <div style="flex:1;">
+          <div style="font-size:1rem;font-weight:700;color:var(--primary);">Anthropic Claude</div>
+          <div style="font-size:0.72rem;color:var(--muted);">api.anthropic.com · Plan Pro mensual</div>
+        </div>
+        <span class="tag tag-cyan">Plan Pro</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">claude-sonnet-4-6</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--primary);">Claude Code — Desarrollo</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Acceso SSH, edición de código, deploy, Git</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-cyan">CLI local</span> <span class="tag tag-muted">Tokens incluidos</span></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Plan Pro · Claude.ai</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--primary);">Chat web + Projects</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Conversaciones, estrategia, análisis de documentos</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-cyan">Web/Mobile</span> <span class="tag tag-muted">Sin código</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEYGEN -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:rgba(255,0,200,0.1);border:1px solid rgba(255,0,200,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🎬</div>
+        <div style="flex:1;">
+          <div style="font-size:1rem;font-weight:700;color:var(--accent);">HeyGen</div>
+          <div style="font-size:0.72rem;color:var(--muted);">api.heygen.com · Plan activo</div>
+        </div>
+        <span class="tag tag-pink">Por crédito</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+        <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Avatar Video Generation</div>
+        <div style="font-size:0.84rem;font-weight:600;color:var(--accent);margin-bottom:6px;">Videos con avatar IA de Seba CEO</div>
+        <div style="font-size:0.75rem;color:var(--muted);">Genera videos presentacionales con el avatar digital de Seba. Usados para captación de clientes y contenido de autoridad.</div>
+        <div style="margin-top:10px;font-size:0.7rem;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="tag tag-pink">Voice ID: voz uruguaya configurada</span>
+          <span class="tag tag-muted">API key en credenciales</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELEVENLABS -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:60px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🔊</div>
+        <div style="flex:1;">
+          <div style="font-size:1rem;font-weight:700;color:var(--green);">ElevenLabs</div>
+          <div style="font-size:0.72rem;color:var(--muted);">api.elevenlabs.io · Plan activo</div>
+        </div>
+        <span class="tag tag-green">Por carácter</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Voz femenina premium</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--green);">Narraciones y presentaciones</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Voz femenina para videos de agencia</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-green">Voice ID configurado</span></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Voz masculina regional</div>
+          <div style="font-size:0.84rem;font-weight:600;color:var(--green);">Narrador español rioplatense</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Voz regional actualizada para contenido uruguayo</div>
+          <div style="margin-top:8px;font-size:0.7rem;"><span class="tag tag-green">Voice ID configurado</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estrategia de tokens -->
+    <p class="section-label">Eficiencia</p>
+    <h2 class="section-heading mb-40">Estrategia de <span>uso de tokens</span></h2>
+
+    <div class="grid-3 mb-60">
+      <div class="card green">
+        <div style="font-size:1.6rem;margin-bottom:10px;">⚡</div>
+        <h3 style="color:var(--green);">Modelos Rápidos (bajo costo)</h3>
+        <p>Groq LLaMA + Gemini Flash para el 90% de las tareas: lectura de logs, listado, ruteo de intenciones, respuestas simples del bot Telegram.</p>
+        <div style="margin-top:12px;font-size:0.75rem;color:var(--green);">→ Tarea de rutina = modelo rápido gratis</div>
+      </div>
+      <div class="card primary">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🧠</div>
+        <h3 style="color:var(--primary);">Claude Sonnet (desarrollo)</h3>
+        <p>Solo para diseño de arquitectura, debugging crítico, tareas que requieren leer múltiples archivos y razonar sobre el código complejo.</p>
+        <div style="margin-top:12px;font-size:0.75rem;color:var(--primary);">→ Tarea técnica compleja = Claude Code</div>
+      </div>
+      <div class="card orange">
+        <div style="font-size:1.6rem;margin-bottom:10px;">💾</div>
+        <h3 style="color:var(--orange);">Memoria en archivos</h3>
+        <p>Context caching via archivos .md en el repositorio. El agente no relee todo el proyecto cada vez — solo carga lo relevante.</p>
+        <div style="margin-top:12px;font-size:0.75rem;color:var(--orange);">→ MEMORY.md + project.md = menos tokens</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAGE: CREDENCIALES ═══════════════════════ -->
+<div class="page" id="page-credenciales">
+  <div class="page-header">
+    <div class="badge">Solo acceso autorizado — Seba CEO</div>
+    <h1>Credenciales</h1>
+    <p>APIs, tokens y accesos de todos los servicios del ecosistema</p>
+  </div>
+
+  <div class="container">
+
+    <div style="background:rgba(255,136,0,0.06);border:1px solid rgba(255,136,0,0.2);border-radius:12px;padding:16px 20px;margin-bottom:40px;font-size:0.82rem;color:var(--orange);">
+      ⚠️ Este panel es de acceso privado. No compartir ni indexar. Acceso solo desde red segura.
+    </div>
+
+    <p class="section-label">APIs de Inteligencia Artificial</p>
+    <h2 class="section-heading mb-40">Claves de <span>API</span></h2>
+
+    <div class="mb-60">
+      <div class="cred-row">
+        <div class="cred-icon">⚡</div>
+        <div>
+          <div class="cred-name">Groq API Key</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Agente Seba Telegram + ELI Whisper</div>
+        </div>
+        <div class="cred-val" onclick="copyText('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', this)">gsk_xSppw...ngAFv · click para copiar</div>
+        <span class="cred-tag tag tag-purple">Gratis</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🎬</div>
+        <div>
+          <div class="cred-name">HeyGen API Key</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Generación de videos con avatar de Seba</div>
+        </div>
+        <div class="cred-val" onclick="copyText('heygen_api_key_aqui', this)">Ver en docs/guia_credenciales_maestra.md</div>
+        <span class="cred-tag tag tag-pink">Créditos</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🔊</div>
+        <div>
+          <div class="cred-name">ElevenLabs API Key</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Generación de voz IA — 2 voice IDs configurados</div>
+        </div>
+        <div class="cred-val" onclick="copyText('elevenlabs_api_key', this)">Ver en docs/guia_credenciales_maestra.md</div>
+        <span class="cred-tag tag tag-green">Activo</span>
+      </div>
+    </div>
+
+    <p class="section-label">Bots y Canales</p>
+    <h2 class="section-heading mb-40">Tokens de <span>mensajería</span></h2>
+
+    <div class="mb-60">
+      <div class="cred-row">
+        <div class="cred-icon">📱</div>
+        <div>
+          <div class="cred-name">Telegram Bot Token — Asistente Seba</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Bot: @asistentepersonal · ID: 8746380733</div>
+        </div>
+        <div class="cred-val" onclick="copyText('8746380733:AAGTQHNhFdhGydLXijezQqT0kGYZlZfp1to', this)">8746380733:AAGTQH...1to · click para copiar</div>
+        <span class="cred-tag tag tag-cyan">Activo</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">💬</div>
+        <div>
+          <div class="cred-name">WhatsApp Cloud API — ELI</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Número: +598 97 595 464 · Meta Business</div>
+        </div>
+        <div class="cred-val">Token en n8n credential "WhatsApp API"</div>
+        <span class="cred-tag tag tag-green">Activo</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">📸</div>
+        <div>
+          <div class="cred-name">Instagram Graph API — ARIA</div>
+          <div style="font-size:0.7rem;color:var(--muted);">@automatizame_uy · Meta Business Suite</div>
+        </div>
+        <div class="cred-val">Page token en n8n credential "Instagram API"</div>
+        <span class="cred-tag tag tag-pink">Activo</span>
+      </div>
+    </div>
+
+    <p class="section-label">Infraestructura</p>
+    <h2 class="section-heading mb-40">Acceso al <span>servidor</span></h2>
+
+    <div class="mb-60">
+      <div class="cred-row">
+        <div class="cred-icon">🖥️</div>
+        <div>
+          <div class="cred-name">SSH VPS Hostinger</div>
+          <div style="font-size:0.7rem;color:var(--muted);">srv1484274.hstgr.cloud · root</div>
+        </div>
+        <div class="cred-val" onclick="copyText('ssh -i C:/Users/usuario/.ssh/id_ed25519 root@srv1484274.hstgr.cloud', this)">ssh -i ~/.ssh/id_ed25519 root@srv1484274.hstgr.cloud</div>
+        <span class="cred-tag tag tag-cyan">SSH key</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🗄️</div>
+        <div>
+          <div class="cred-name">PostgreSQL n8n — Contraseña</div>
+          <div style="font-size:0.7rem;color:var(--muted);">DB: automatizacion1 · user: postgres</div>
+        </div>
+        <div class="cred-val" onclick="copyText('40dcba6f88baf56652fc', this)">40dcba6f88baf56652fc · click para copiar</div>
+        <span class="cred-tag tag tag-muted">Interno</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🔑</div>
+        <div>
+          <div class="cred-name">n8n API Key</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Para llamadas a la API REST de n8n</div>
+        </div>
+        <div class="cred-val" onclick="copyText('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmN2Q4MjA4YS1jMDFlLTQwZDctODVlYS1lMTI4NjQ3NGM5OTgiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZGFkMTJmMmQtNTk5NC00OTc5LWIzM2QtMWY2NTFhMTdhYTJiIiwiaWF0IjoxNzc2Mjc4MDA5fQ.FBPcUUMZUZyEC0zPRXLBC2m_RojBbRVAsK1wGzYdKFQ', this)">eyJhbGci...KFQ · click para copiar</div>
+        <span class="cred-tag tag tag-cyan">JWT</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🔐</div>
+        <div>
+          <div class="cred-name">n8n Encryption Key</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Para descifrar credentials de n8n</div>
+        </div>
+        <div class="cred-val" onclick="copyText('EUsq20qFxXoS81lsX+oCZU64uB+tj7/+', this)">EUsq20qF...j7/+ · click para copiar</div>
+        <span class="cred-tag tag tag-muted">Cifrado</span>
+      </div>
+    </div>
+
+    <p class="section-label">Voice IDs configurados</p>
+    <h2 class="section-heading mb-40">IDs de <span>voz IA</span></h2>
+
+    <div class="mb-60">
+      <div class="cred-row">
+        <div class="cred-icon">🎙️</div>
+        <div>
+          <div class="cred-name">HeyGen — Voice ID Seba (uruguayo)</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Voz para avatar video de Seba CEO</div>
+        </div>
+        <div class="cred-val">Ver docs/guia_credenciales_maestra.md → HeyGen</div>
+        <span class="cred-tag tag tag-pink">HeyGen</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🎵</div>
+        <div>
+          <div class="cred-name">ElevenLabs — Voice ID femenino</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Para narraciones de la agencia</div>
+        </div>
+        <div class="cred-val">Ver docs/guia_credenciales_maestra.md → ElevenLabs</div>
+        <span class="cred-tag tag tag-green">ElevenLabs</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🎵</div>
+        <div>
+          <div class="cred-name">ElevenLabs — Voice ID masculino regional</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Narrador español rioplatense</div>
+        </div>
+        <div class="cred-val">Ver docs/guia_credenciales_maestra.md → ElevenLabs</div>
+        <span class="cred-tag tag tag-green">ElevenLabs</span>
+      </div>
+    </div>
+
+    <!-- Secret del agente Seba -->
+    <p class="section-label">Agente Telegram</p>
+    <h2 class="section-heading mb-40">Configuración del <span>agente</span></h2>
+
+    <div class="mb-60">
+      <div class="cred-row">
+        <div class="cred-icon">🔒</div>
+        <div>
+          <div class="cred-name">Agente Seba — Secret de autenticación</div>
+          <div style="font-size:0.7rem;color:var(--muted);">Enviado en cada POST a puerto 3131 para validar origen</div>
+        </div>
+        <div class="cred-val" onclick="copyText('automatizame2026', this)">automatizame2026 · click para copiar</div>
+        <span class="cred-tag tag tag-cyan">Activo</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">🌐</div>
+        <div>
+          <div class="cred-name">Telegram Credential n8n</div>
+          <div style="font-size:0.7rem;color:var(--muted);">ID de credential en n8n para el bot</div>
+        </div>
+        <div class="cred-val" onclick="copyText('EMkuSuIvQQU1R3I0', this)">ID: EMkuSuIvQQU1R3I0 · "asistente personal11"</div>
+        <span class="cred-tag tag tag-cyan">n8n</span>
+      </div>
+      <div class="cred-row">
+        <div class="cred-icon">⚙️</div>
+        <div>
+          <div class="cred-name">Workflow Agente Seba Bot v2</div>
+          <div style="font-size:0.7rem;color:var(--muted);">ID del workflow en n8n</div>
+        </div>
+        <div class="cred-val" onclick="copyText('3ZgiLLQCNb1yiFgC', this)">ID: 3ZgiLLQCNb1yiFgC · click para copiar</div>
+        <span class="cred-tag tag tag-green">Activo</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PAGE: ROADMAP ════════════════════════════ -->
+<div class="page" id="page-roadmap">
+  <div class="page-header">
+    <div class="badge">Hoja de ruta — Q2 2026</div>
+    <h1>Roadmap</h1>
+    <p>Plan de construcción del ecosistema completo de agentes</p>
+  </div>
+
+  <div class="container">
+
+    <p class="section-label">Progreso actual</p>
+    <h2 class="section-heading mb-40">Fase <span>Q2 2026</span></h2>
+
+    <div class="roadmap mb-60">
+      <div class="rm-item">
+        <div class="rm-step rs-done">✓</div>
+        <div class="rm-content">
+          <h4>Bot Telegram funcionando end-to-end</h4>
+          <p>Canal conectado. Seba manda un mensaje → n8n captura → llama al agente en el VPS → Groq interpreta → ejecuta acción real (DB, Docker) → responde por Telegram. Ejecutado con éxito en producción.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-done">✓</div>
+        <div class="rm-content">
+          <h4>Infraestructura base estable</h4>
+          <p>ELI WhatsApp, ARIA Web, ARIA Instagram operativos. n8n con 38 workflows. PostgreSQL funcionando. Agente Seba en puerto 3131 con herramientas: listar workflows, ver leads, estado servidor, reiniciar n8n.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-now">3</div>
+        <div class="rm-content">
+          <h4>Implementar Coordinador + router de intenciones</h4>
+          <p>Instalar el router en agente_seba.js para que detecte automáticamente si la instrucción es técnica, CRM, contenido o inmobiliaria y ejecute las herramientas correctas. Segunda llamada a Groq para el routing.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-next">4</div>
+        <div class="rm-content">
+          <h4>Dashboard en el VPS — acceso desde cualquier lugar</h4>
+          <p>Deploy de este panel (comando.html) al VPS en una URL privada con autenticación básica. Accesible desde cualquier dispositivo sin abrir la PC.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-next">5</div>
+        <div class="rm-content">
+          <h4>Ampliar herramientas Agente CRM</h4>
+          <p>Conectar leads de Instagram, WhatsApp y web en una vista unificada. Alertas automáticas de leads sin contactar +48hs. Ver LTV y pipeline de conversión.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-next">6</div>
+        <div class="rm-content">
+          <h4>Agente Contenido operativo</h4>
+          <p>Generación de posts, guiones para reels y videos HeyGen directo desde Telegram. Calendario editorial semanal con un mensaje. Integración con ElevenLabs para narración.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-next">7</div>
+        <div class="rm-content">
+          <h4>CRM Nivel 2 — esquema relacional con LTV</h4>
+          <p>Migrar a esquema relacional con clientes, proyectos, tickets, LTV y pipeline. Schema SQL ya diseñado en docs/crm_nivel2_schema.sql. Conectar con el agente CRM para reportes avanzados.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-step rs-next">8</div>
+        <div class="rm-content">
+          <h4>Agente Inmobiliario con scrapers activos</h4>
+          <p>Scrapers de MeLi + InfoCasas para Destino Abril con matching automático. Alertas de nuevas propiedades para leads con criterios específicos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cowork AI info -->
+    <p class="section-label">Modo colaborativo</p>
+    <h2 class="section-heading mb-40">Cómo funciona el <span>CoWork IA</span></h2>
+
+    <div class="grid-2 mb-60">
+      <div class="card primary">
+        <div style="font-size:1.6rem;margin-bottom:12px;">🤝</div>
+        <h3>¿Qué es el CoWork IA?</h3>
+        <p>Es el sistema donde múltiples agentes de IA trabajan en paralelo en el mismo proyecto. Cada uno tiene su rol específico y se coordinan a través de archivos compartidos (MEMORY.md, coordinacion.md) para no pisarse.</p>
+        <div style="margin-top:12px;font-size:0.78rem;color:var(--primary);">
+          Agente Técnico + Claude Code + Antigravity = equipo completo
+        </div>
+      </div>
+      <div class="card green">
+        <div style="font-size:1.6rem;margin-bottom:12px;">💾</div>
+        <h3>Protocolo de coordinación</h3>
+        <p>Cada agente tiene acceso a los archivos .md del proyecto. Cuando un agente termina una tarea importante, actualiza el MEMORY.md. El siguiente agente lee ese contexto y continúa sin empezar desde cero.</p>
+        <div style="margin-top:12px;font-size:0.78rem;color:var(--green);">
+          → Sin context loss entre sesiones de trabajo
+        </div>
+      </div>
+      <div class="card orange">
+        <div style="font-size:1.6rem;margin-bottom:12px;">📱</div>
+        <h3>Desde Telegram (24/7)</h3>
+        <p>El Agente Seba opera autónomamente. Seba da una instrucción corta → el coordinador decide qué agente activar → el sub-agente ejecuta → responde directamente al celular. Sin necesidad de abrir la PC.</p>
+        <div style="margin-top:12px;font-size:0.78rem;color:var(--orange);">
+          → "listar workflows activos" → respuesta en 3 segundos
+        </div>
+      </div>
+      <div class="card purple">
+        <div style="font-size:1.6rem;margin-bottom:12px;">💻</div>
+        <h3>Desde Claude Code (full power)</h3>
+        <p>Para tareas complejas: SSH al servidor, edición de código, debugging, deploy. Claude Code lee el estado del proyecto desde MEMORY.md y continúa exactamente donde se dejó en la sesión anterior.</p>
+        <div style="margin-top:12px;font-size:0.78rem;color:#a855f7;">
+          → "arreglá el workflow de ELI" → accede, debugea, deploya
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<footer>
+  <p>AUTOMATÍZAME.UY — <span>Centro de Comando v2.0</span> — Abril 2026 — Solo acceso autorizado</p>
+</footer>
+
+<!-- ═══════════════════════════════ SCRIPTS ══════════════════════════════════ -->
+<script>
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function togglePrompt(el) {
+    const box = el.nextElementSibling;
+    const arrow = el.querySelector('.arr');
+    box.classList.toggle('open');
+    arrow.style.transform = box.classList.contains('open') ? 'rotate(180deg)' : '';
+  }
+
+  function copyPrompt(btn) {
+    const pre = btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+      btn.textContent = '✓ Copiado';
+      setTimeout(() => btn.textContent = 'Copiar', 2000);
+    });
+  }
+
+  function copyText(text, el) {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = el.textContent;
+      el.textContent = '✓ Copiado al portapapeles';
+      el.style.color = 'var(--green)';
+      setTimeout(() => { el.textContent = original; el.style.color = ''; }, 2000);
+    });
+  }
+
+  // ─── KPIs EN TIEMPO REAL ───────────────────────────────────────────
+  const KPI_URL = 'https://n8n.automatizameuy.com/webhook/dashboard-kpis';
+  const KPI_INTERVAL = 120000; // 2 minutos
+
+  function animateVal(el, newVal) {
+    if (!el) return;
+    const current = el.textContent;
+    if (current === newVal) return;
+    el.style.opacity = '0.3';
+    el.style.transform = 'scale(0.9)';
+    el.style.transition = 'opacity 0.25s, transform 0.25s';
+    setTimeout(() => {
+      el.textContent = newVal;
+      el.style.opacity = '1';
+      el.style.transform = 'scale(1)';
+    }, 250);
+  }
+
+  async function fetchKPIs() {
+    try {
+      const res = await fetch(KPI_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const d = await res.json();
+
+      animateVal(document.getElementById('kpi-total-clientes'), d.total_clientes || '—');
+      animateVal(document.getElementById('kpi-clientes-hoy'), d.clientes_hoy || '0');
+      animateVal(document.getElementById('kpi-clientes'), d.total_clientes || '—');
+      animateVal(document.getElementById('kpi-total-props'), d.total_propiedades || '—');
+      animateVal(document.getElementById('kpi-props-hoy'), d.propiedades_hoy || '0');
+      animateVal(document.getElementById('kpi-dueno-directo'), d.props_dueno_directo || '0');
+      animateVal(document.getElementById('kpi-leads-inmo'), d.total_leads_inmo || '0');
+
+      const canalEl = document.getElementById('kpi-ultimo-canal');
+      if (canalEl && d.ultimo_canal) {
+        const iconos = { whatsapp: '📞', instagram: '📸', web: '🌐', telegram: '✈️' };
+        const ic = iconos[d.ultimo_canal] || '💬';
+        canalEl.textContent = ic + ' Último lead: ' + d.ultimo_canal;
+      }
+
+      const upEl = document.getElementById('kpi-last-update');
+      if (upEl) {
+        const now = new Date();
+        upEl.textContent = 'Actualizado ' + now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) {
+      const upEl = document.getElementById('kpi-last-update');
+      if (upEl) upEl.textContent = 'Error al cargar datos';
+    }
+  }
+
+  fetchKPIs();
+  setInterval(fetchKPIs, KPI_INTERVAL);
+</script>
+
+</body>
+</html>
