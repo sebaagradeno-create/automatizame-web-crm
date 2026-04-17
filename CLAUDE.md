@@ -154,6 +154,40 @@ echo "texto" | ollama run gemma4
 
 ---
 
+## Estrategia de Marketing (MAESTRA)
+
+**Filosofía Central:** Conversión directa, no engagement vano.
+
+**Regla de los 5 Minutos:** Lead sin respuesta en 5 min = 80% menos conversión → Automatizar respuestas.
+
+**Sistema 10/30 (Meta Ads):**
+- 10 ángulos estratégicos por campaña
+- 3 creatives por ángulo = 30 variaciones
+- No segmentar por intereses, solo por contenido
+- Dejar 50 conversiones antes de modificar
+
+**Estructura de Contenido 70/30:**
+- 70% → Problema/Dolor del cliente
+- 30% → Solución
+
+**Calendario 30 días:**
+- 50% Contenido de Problema
+- 30% Contenido de Solución + Tips
+- 10% Contenido de Producto (cómo lo hacemos)
+- 10% Mentalidad/Valores
+
+**Reels/Videos:**
+Usar modelo OATF (Oferta Amigable Tráfico Frío):
+1. Resultado Soñado
+2. Percepción de Realización (testimonios)
+3. Reducción de Esfuerzo
+4. Optimización del Tiempo
+
+**Lead Magnet:** Gancho de baja fricción, no vender directo
+- Ej: "Diagnóstico de Automatización Gratis"
+
+---
+
 ## Stack técnico
 
 - **Automatización:** n8n self-hosted
