@@ -28,7 +28,7 @@ jobs:
 
       - name: 📦 npm install
         working-directory: scratch/cocodrilo
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: 🔄 Capacitor sync
         working-directory: scratch/cocodrilo
