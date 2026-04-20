@@ -13,6 +13,7 @@
 - **Key Name:** `seba de marketing`
 - **Modo:** Agent
 - **Avatar ID (Pibe de oficina):** `82d81dab145d4934bef8a20f0ee8ad1d`
+- **Talking Photo ID (Seba CEO Pro):** `3bdd38a4b75441b8bb25135ca3a60087`
 - **Voice ID (Tomas - Uruguay/Arg):** `54f389008bd74f37bccf692eb544e2f7`
 
 ---

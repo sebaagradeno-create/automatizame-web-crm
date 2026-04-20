@@ -1,0 +1,1365 @@
+﻿{
+    "updatedAt":  "2026-04-04T04:57:47.403Z",
+    "createdAt":  "2026-04-02T22:54:13.962Z",
+    "id":  "8Mv1OO1JTWJOHFMa",
+    "name":  "📩 Instagram DM Bot - ARIA V2",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "instagram-dm-webhook-v2",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ig-wh-post",
+                      "name":  "📥 Instagram Webhook",
+                      "position":  [
+                                       -1008,
+                                       80
+                                   ],
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2,
+                      "webhookId":  "ig-webhook-v2"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const input = $input.first().json;\nconst body = input.body || input;\nlet senderPsid = \u0027\u0027;\nlet messageText = \u0027\u0027;\nlet messageId = \u0027\u0027;\nlet timestamp = Date.now().toString();\ntry {\n  const entry = body.entry?.[0];\n  if (entry?.messaging?.[0]) {\n    const msg = entry.messaging[0];\n    if (msg.message?.is_echo || msg.delivery || msg.read) {\n      return [{ json: { skip: true, reason: \u0027echo_or_system\u0027 } }];\n    }\n    senderPsid = msg.sender?.id || \u0027\u0027;\n    messageText = msg.message?.text || \u0027\u0027;\n    messageId = msg.message?.mid || \u0027\u0027;\n    timestamp = msg.timestamp || timestamp;\n  }\n  if (!messageText \u0026\u0026 entry?.changes?.[0]) {\n    const change = entry.changes[0];\n    const value = change.value || {};\n    senderPsid = value.from?.id || value.sender?.id || \u0027\u0027;\n    messageText = value.message?.text || value.text || \u0027\u0027;\n    messageId = value.message?.mid || value.id || \u0027\u0027;\n    timestamp = value.timestamp || timestamp;\n  }\n} catch (e) {\n  senderPsid = body.sender_id || body.from || \u0027\u0027;\n  messageText = body.message || body.text || \u0027\u0027;\n}\nif (!senderPsid || !messageText) {\n  return [{ json: { skip: true, reason: \u0027no_valid_message\u0027 } }];\n}\n\nlet sourceType = body.entry?.[0]?.changes?.[0] ? \u0027instagram_comment\u0027 : \u0027instagram_dm\u0027;\nreturn [{ json: { skip: false, sender_psid: senderPsid, message_text: messageText, message_id: messageId, timestamp: timestamp, source: sourceType } }];\n"
+                                     },
+                      "id":  "ig-extract",
+                      "name":  "🔍 Extraer Mensaje",
+                      "position":  [
+                                       -800,
+                                       80
+                                   ],
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  1
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "skip-check",
+                                                                                   "leftValue":  "={{ $json.skip }}",
+                                                                                   "operator":  {
+                                                                                                    "operation":  "notEquals",
+                                                                                                    "type":  "boolean"
+                                                                                                },
+                                                                                   "rightValue":  true
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ig-valid",
+                      "name":  "⚡ ¿Mensaje Válido?",
+                      "position":  [
+                                       -624,
+                                       80
+                                   ],
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={\"status\": \"ignored\"}",
+                                         "options":  {
+                                                         "responseCode":  200
+                                                     }
+                                     },
+                      "id":  "ig-ignore",
+                      "name":  "⏭️ Ignorar (200 OK)",
+                      "position":  [
+                                       -624,
+                                       -80
+                                   ],
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1
+                  },
+                  {
+                      "parameters":  {
+                                         "promptType":  "define",
+                                         "text":  "={{ $json.message_text }}",
+                                         "options":  {
+                                                         "systemMessage":  "Eres ARIA, Asistente de Automatizame.uy. Trabajas con Sebastian Agradeno, fundador.\nRespondes DMs de Instagram de forma natural y profesional.\n\nREGLAS:\n1. NUNCA reveles que eres IA, bot o similar.\n2. Si preguntan si eres bot: Soy parte del equipo de Automatizame. En que te puedo ayudar?\n3. NUNCA des precios. Di: Cada proyecto es unico, Seba arma propuestas en una llamada de 30 min.\n4. NUNCA inventes datos.\n5. NO des el link de Calendly sin entender el problema primero.\n\nDATOS:\nWeb: https://automatizameuy.com\nCalendly: https://calendly.com/sebaagradeno/30min\nIG: @automatizame_uy\nUbicacion: Uruguay, atendemos LATAM y Espana\n\nSERVICIOS:\n- Automatizacion con n8n auto-hospedado\n- CRMs a medida\n- Agentes de IA para ventas y atencion\n- Contenidos con IA\n- Infraestructura Neuronal Integral\n\nESTRATEGIA:\n1. Saluda calido\n2. Pregunta sobre su negocio y problema\n3. Cuantifica lo que pierden\n4. Describe brevemente la solucion\n5. Invita a https://automatizameuy.com/ y a agendar: https://calendly.com/sebaagradeno/30min\n\nESTILO: Cercano, tuteo, mensajes CORTOS (3-4 lineas max), 1-2 emojis, solo texto plano."
+                                                     }
+                                     },
+                      "id":  "ig-aria",
+                      "name":  "🧠 ARIA - Ventas IA",
+                      "position":  [
+                                       -128,
+                                       16
+                                   ],
+                      "type":  "@n8n/n8n-nodes-langchain.agent",
+                      "typeVersion":  1.7
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "llama-3.3-70b-versatile",
+                                         "options":  {
+                                                         "maxTokensToSample":  400,
+                                                         "temperature":  0.6
+                                                     }
+                                     },
+                      "id":  "ig-groq",
+                      "name":  "Groq (Llama-3.3 70B)",
+                      "position":  [
+                                       -128,
+                                       208
+                                   ],
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGroq",
+                      "typeVersion":  1,
+                      "credentials":  {
+                                          "groqApi":  {
+                                                          "id":  "qr6uCVFF8OqWm4dd",
+                                                          "name":  "Groq account 2"
+                                                      }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "sessionIdType":  "customKey",
+                                         "sessionKey":  "=ig_{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.sender_psid }}",
+                                         "contextWindowLength":  20
+                                     },
+                      "id":  "ig-memory",
+                      "name":  "💾 Memoria por Usuario",
+                      "position":  [
+                                       -32,
+                                       208
+                                   ],
+                      "type":  "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+                      "typeVersion":  1.3
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const senderPsid = $(\u0027🔍 Extraer Mensaje\u0027).first().json.sender_psid;\nconst aiResponse = $input.first().json.output || $input.first().json.text || \u0027Disculpa, hubo un problema.\u0027;\nlet cleanResponse = aiResponse.replace(/^(assistant|aria):\\s*/gi, \u0027\u0027).trim();\nif (cleanResponse.length \u003e 1000) cleanResponse = cleanResponse.substring(0, 997) + \u0027...\u0027;\nconst msgLower = ($(\u0027🔍 Extraer Mensaje\u0027).first().json.message_text || \u0027\u0027).toLowerCase();\nlet temperature = \u0027frio\u0027;\nif (msgLower.includes(\u0027agendar\u0027) || msgLower.includes(\u0027reunion\u0027)) temperature = \u0027listo\u0027;\nelse if (msgLower.includes(\u0027precio\u0027) || msgLower.includes(\u0027presupuesto\u0027)) temperature = \u0027caliente\u0027;\nelse if (msgLower.includes(\u0027necesito\u0027) || msgLower.includes(\u0027ayuda\u0027)) temperature = \u0027tibio\u0027;\nreturn [{ json: { sender_psid: senderPsid, response_text: cleanResponse, original_message: $(\u0027🔍 Extraer Mensaje\u0027).first().json.message_text, temperature: temperature, is_hot: (temperature === \u0027caliente\u0027 || temperature === \u0027listo\u0027), timestamp: new Date().toISOString() } }];"
+                                     },
+                      "id":  "ig-process",
+                      "name":  "⚙️ Procesar + Clasificar",
+                      "position":  [
+                                       176,
+                                       0
+                                   ],
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "=https://graph.instagram.com/v21.0/me/messages",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={\n  \"recipient\": { \"id\": \"{{ $json.sender_psid }}\" },\n  \"message\": { \"text\": {{ JSON.stringify($json.response_text) }} }\n}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ig-send",
+                      "name":  "📤 Responder DM Instagram",
+                      "position":  [
+                                       320,
+                                       0
+                                   ],
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "executeQuery",
+                                         "query":  "INSERT INTO ig_leads (instagram_psid, last_message, ai_response, temperature, source, created_at, updated_at)\nVALUES (\n  \u0027{{ $json.sender_psid }}\u0027,\n  \u0027{{ $json.original_message }}\u0027,\n  \u0027{{ $json.response_text }}\u0027,\n  \u0027{{ $json.temperature }}\u0027,\n  \u0027instagram_dm\u0027, NOW(), NOW()\n)\nON CONFLICT (instagram_psid)\nDO UPDATE SET\n  last_message = EXCLUDED.last_message,\n  ai_response = EXCLUDED.ai_response,\n  temperature = EXCLUDED.temperature,\n  conversation_count = ig_leads.conversation_count + 1,\n  updated_at = NOW();",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ig-save",
+                      "name":  "💾 Guardar/Actualizar Lead",
+                      "position":  [
+                                       480,
+                                       0
+                                   ],
+                      "type":  "n8n-nodes-base.postgres",
+                      "typeVersion":  2.5,
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "rfMpsEPaVls9DDGX",
+                                                           "name":  "Postgres account 2"
+                                                       }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "combinator":  "or",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "hot-check",
+                                                                                   "leftValue":  "={{ $json.is_hot }}",
+                                                                                   "operator":  {
+                                                                                                    "operation":  "equals",
+                                                                                                    "type":  "boolean"
+                                                                                                },
+                                                                                   "rightValue":  true
+                                                                               }
+                                                                           ],
+                                                            "options":  {
+
+                                                                        }
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "ig-hot",
+                      "name":  "🔥 ¿Lead Caliente?",
+                      "position":  [
+                                       640,
+                                       0
+                                   ],
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2
+                  },
+                  {
+                      "parameters":  {
+                                         "chatId":  "1301491979",
+                                         "text":  "=LEAD CALIENTE IG!\nDijo: {{ $json.original_message }}\nARIA: {{ $json.response_text.substring(0, 200) }}\nTemp: {{ $json.temperature }}",
+                                         "additionalFields":  {
+
+                                                              }
+                                     },
+                      "id":  "ig-telegram",
+                      "name":  "📱 Alerta Telegram",
+                      "position":  [
+                                       832,
+                                       -16
+                                   ],
+                      "type":  "n8n-nodes-base.telegram",
+                      "typeVersion":  1.2,
+                      "webhookId":  "111a89ea-2346-43c7-b046-639331eca1c9",
+                      "credentials":  {
+                                          "telegramApi":  {
+                                                              "id":  "EMkuSuIvQQU1R3I0",
+                                                              "name":  "automatizameuy"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={\"status\": \"ok\"}",
+                                         "options":  {
+                                                         "responseCode":  200
+                                                     }
+                                     },
+                      "id":  "ig-respond-ok",
+                      "name":  "✅ Responder 200 OK",
+                      "position":  [
+                                       768,
+                                       208
+                                   ],
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1
+                  },
+                  {
+                      "parameters":  {
+                                         "path":  "instagram-dm-webhook-v2",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       -1008,
+                                       -208
+                                   ],
+                      "id":  "96206f5d-fb2f-4ed9-a64f-49c7456f3d8e",
+                      "name":  "Webhook",
+                      "webhookId":  "b02f6557-8f4e-438a-92a0-6390a67cfac7"
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "text",
+                                         "responseBody":  "={{ $json.query[\"hub.challenge\"] }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       -816,
+                                       -208
+                                   ],
+                      "id":  "dc48e8c9-1a7a-458b-98a7-c78615f881b4",
+                      "name":  "Respond to Webhook"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "boolean":  [
+
+                                                                        ],
+                                                            "string":  [
+                                                                           {
+                                                                               "value1":  "=={{ $json.source }}",
+                                                                               "operation":  "contains",
+                                                                               "value2":  "dm"
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "id":  "a9cb8eec-8c43-4159-ad98-f48f3bdc789c",
+                      "name":  "🚦 Desvío (Por ahora flotante)",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -400,
+                                       64
+                                   ],
+                      "notesInFlow":  true,
+                      "notes":  "Une aquí la salida de \u0027Extraer Mensaje\u0027"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "string":  [
+                                                                           {
+                                                                               "value1":  "={{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.message_text.toLowerCase() }}",
+                                                                               "operation":  "regex",
+                                                                               "value2":  "(automatizame|automatizade|automatizameuy|yo quiero|ayuda|proceso|proseso)"
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "id":  "3e4c0f16-9dec-44c1-ab50-8d068f91231f",
+                      "name":  "🔍 Filtro: Palabra Clave",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -320,
+                                       384
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "=https://graph.instagram.com/v21.0/{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.message_id }}/replies",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={ \"message\": \"¡Listo! ✨ Mira tu DM, ya te envié lo que pediste 😉\" }",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "3d52dd5c-3370-409d-8d7d-b8ab676b68a9",
+                      "name":  "🗣️ Comentar Público",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.1,
+                      "position":  [
+                                       -112,
+                                       368
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://graph.instagram.com/v21.0/me/messages",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={\n  \"recipient\": {\"id\": \"{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.sender_psid }}\"},\n  \"message\": {\n    \"attachment\": {\n      \"type\": \"template\",\n      \"payload\": {\n        \"template_type\": \"generic\",\n        \"elements\": [\n          {\n            \"title\": \"¡Hola! 🚀 Estás a un paso de escalar tu negocio.\",\n            \"subtitle\": \"¿Cómo prefieres avanzar? 👇\",\n            \"buttons\": [\n              {\n                \"type\": \"web_url\",\n                \"url\": \"https://automatizameuy.com\",\n                \"title\": \"🌐 IA Web\"\n              },\n              {\n                \"type\": \"web_url\",\n                \"url\": \"https://wa.me/59897595464?text=Hola%20Automat%C3%ADzame%2C%20quiero%20mejorar%20los%20procesos%20de%20mi%20empresa.\",\n                \"title\": \"💬 WhatsApp\"\n              }\n            ]\n          }\n        ]\n      }\n    }\n  }\n}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "7c1f022a-b68e-481f-8d29-e631ac45bf05",
+                      "name":  "📤 DM (La Botonera)",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.1,
+                      "position":  [
+                                       64,
+                                       368
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={\"status\": \"ok\"}",
+                                         "options":  {
+                                                         "responseCode":  200
+                                                     }
+                                     },
+                      "id":  "674c9274-1f53-4f1a-ad6a-32bc77fabdb5",
+                      "name":  "✅ Responder 200 OK1",
+                      "position":  [
+                                       256,
+                                       368
+                                   ],
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1
+                  }
+              ],
+    "connections":  {
+                        "Groq (Llama-3.3 70B)":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+                                                                                  {
+                                                                                      "index":  0,
+                                                                                      "node":  "🧠 ARIA - Ventas IA",
+                                                                                      "type":  "ai_languageModel"
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "⚙️ Procesar + Clasificar":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "index":  0,
+                                                                              "node":  "📤 Responder DM Instagram",
+                                                                              "type":  "main"
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "⚡ ¿Mensaje Válido?":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "🚦 Desvío (Por ahora flotante)",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "index":  0,
+                                                                        "node":  "⏭️ Ignorar (200 OK)",
+                                                                        "type":  "main"
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "💾 Guardar/Actualizar Lead":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "index":  0,
+                                                                                "node":  "🔥 ¿Lead Caliente?",
+                                                                                "type":  "main"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "💾 Memoria por Usuario":  {
+                                                       "ai_memory":  [
+                                                                         [
+                                                                             {
+                                                                                 "index":  0,
+                                                                                 "node":  "🧠 ARIA - Ventas IA",
+                                                                                 "type":  "ai_memory"
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                   },
+                        "📤 Responder DM Instagram":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "index":  0,
+                                                                               "node":  "💾 Guardar/Actualizar Lead",
+                                                                               "type":  "main"
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "📥 Instagram Webhook":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "index":  0,
+                                                                          "node":  "🔍 Extraer Mensaje",
+                                                                          "type":  "main"
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "📱 Alerta Telegram":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "index":  0,
+                                                                        "node":  "✅ Responder 200 OK",
+                                                                        "type":  "main"
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "🔍 Extraer Mensaje":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "index":  0,
+                                                                        "node":  "⚡ ¿Mensaje Válido?",
+                                                                        "type":  "main"
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "🔥 ¿Lead Caliente?":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "index":  0,
+                                                                        "node":  "📱 Alerta Telegram",
+                                                                        "type":  "main"
+                                                                    }
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "index":  0,
+                                                                        "node":  "✅ Responder 200 OK",
+                                                                        "type":  "main"
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "🧠 ARIA - Ventas IA":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "index":  0,
+                                                                         "node":  "⚙️ Procesar + Clasificar",
+                                                                         "type":  "main"
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Webhook":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Respond to Webhook",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "🚦 Desvío (Por ahora flotante)":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "🧠 ARIA - Ventas IA",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ],
+                                                                            [
+                                                                                {
+                                                                                    "node":  "🔍 Filtro: Palabra Clave",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "🔍 Filtro: Palabra Clave":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "🗣️ Comentar Público",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ],
+                                                                      [
+                                                                          {
+                                                                              "node":  "✅ Responder 200 OK1",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "🗣️ Comentar Público":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "📤 DM (La Botonera)",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "📤 DM (La Botonera)":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "✅ Responder 200 OK1",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                }
+                    },
+    "settings":  {
+                     "saveExecutionProgress":  true,
+                     "saveManualExecutions":  true,
+                     "saveDataErrorExecution":  "all",
+                     "saveDataSuccessExecution":  "all",
+                     "executionTimeout":  3600,
+                     "timezone":  "UTC",
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "availableInMCP":  false,
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate",
+                     "timeSavedMode":  "fixed"
+                 },
+    "staticData":  null,
+    "meta":  null,
+    "pinData":  {
+
+                },
+    "versionId":  "b4c84f78-d815-45d1-94eb-bf168cc6e329",
+    "activeVersionId":  "b4c84f78-d815-45d1-94eb-bf168cc6e329",
+    "versionCounter":  164,
+    "triggerCount":  2,
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-04-02T22:54:13.962Z",
+                       "createdAt":  "2026-04-02T22:54:13.962Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "8Mv1OO1JTWJOHFMa",
+                       "projectId":  "0U8gdZYNomjlLmnU",
+                       "project":  {
+                                       "updatedAt":  "2026-03-15T22:49:54.405Z",
+                                       "createdAt":  "2026-03-15T22:43:24.325Z",
+                                       "id":  "0U8gdZYNomjlLmnU",
+                                       "name":  "sebastian De pro Agradeño \u003csebaagradeno@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "creatorId":  "f7d8208a-c01e-40d7-85ea-e1286474c998"
+                                   }
+                   }
+               ],
+    "tags":  [
+
+             ],
+    "activeVersion":  {
+                          "updatedAt":  "2026-04-04T04:12:11.321Z",
+                          "createdAt":  "2026-04-04T04:11:28.626Z",
+                          "versionId":  "b4c84f78-d815-45d1-94eb-bf168cc6e329",
+                          "workflowId":  "8Mv1OO1JTWJOHFMa",
+                          "nodes":  [
+                                        {
+                                            "parameters":  {
+                                                               "httpMethod":  "POST",
+                                                               "path":  "instagram-dm-webhook-v2",
+                                                               "responseMode":  "responseNode",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "ig-wh-post",
+                                            "name":  "📥 Instagram Webhook",
+                                            "position":  [
+                                                             -1008,
+                                                             80
+                                                         ],
+                                            "type":  "n8n-nodes-base.webhook",
+                                            "typeVersion":  2,
+                                            "webhookId":  "ig-webhook-v2"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "const input = $input.first().json;\nconst body = input.body || input;\nlet senderPsid = \u0027\u0027;\nlet messageText = \u0027\u0027;\nlet messageId = \u0027\u0027;\nlet timestamp = Date.now().toString();\ntry {\n  const entry = body.entry?.[0];\n  if (entry?.messaging?.[0]) {\n    const msg = entry.messaging[0];\n    if (msg.message?.is_echo || msg.delivery || msg.read) {\n      return [{ json: { skip: true, reason: \u0027echo_or_system\u0027 } }];\n    }\n    senderPsid = msg.sender?.id || \u0027\u0027;\n    messageText = msg.message?.text || \u0027\u0027;\n    messageId = msg.message?.mid || \u0027\u0027;\n    timestamp = msg.timestamp || timestamp;\n  }\n  if (!messageText \u0026\u0026 entry?.changes?.[0]) {\n    const change = entry.changes[0];\n    const value = change.value || {};\n    senderPsid = value.from?.id || value.sender?.id || \u0027\u0027;\n    messageText = value.message?.text || value.text || \u0027\u0027;\n    messageId = value.message?.mid || value.id || \u0027\u0027;\n    timestamp = value.timestamp || timestamp;\n  }\n} catch (e) {\n  senderPsid = body.sender_id || body.from || \u0027\u0027;\n  messageText = body.message || body.text || \u0027\u0027;\n}\nif (!senderPsid || !messageText) {\n  return [{ json: { skip: true, reason: \u0027no_valid_message\u0027 } }];\n}\n\nlet sourceType = body.entry?.[0]?.changes?.[0] ? \u0027instagram_comment\u0027 : \u0027instagram_dm\u0027;\nreturn [{ json: { skip: false, sender_psid: senderPsid, message_text: messageText, message_id: messageId, timestamp: timestamp, source: sourceType } }];\n"
+                                                           },
+                                            "id":  "ig-extract",
+                                            "name":  "🔍 Extraer Mensaje",
+                                            "position":  [
+                                                             -800,
+                                                             80
+                                                         ],
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "conditions":  {
+                                                                                  "options":  {
+                                                                                                  "caseSensitive":  true,
+                                                                                                  "leftValue":  "",
+                                                                                                  "typeValidation":  "strict",
+                                                                                                  "version":  1
+                                                                                              },
+                                                                                  "conditions":  [
+                                                                                                     {
+                                                                                                         "id":  "skip-check",
+                                                                                                         "leftValue":  "={{ $json.skip }}",
+                                                                                                         "operator":  {
+                                                                                                                          "operation":  "notEquals",
+                                                                                                                          "type":  "boolean"
+                                                                                                                      },
+                                                                                                         "rightValue":  true
+                                                                                                     }
+                                                                                                 ],
+                                                                                  "combinator":  "and"
+                                                                              },
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "ig-valid",
+                                            "name":  "⚡ ¿Mensaje Válido?",
+                                            "position":  [
+                                                             -624,
+                                                             80
+                                                         ],
+                                            "type":  "n8n-nodes-base.if",
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "respondWith":  "json",
+                                                               "responseBody":  "={\"status\": \"ignored\"}",
+                                                               "options":  {
+                                                                               "responseCode":  200
+                                                                           }
+                                                           },
+                                            "id":  "ig-ignore",
+                                            "name":  "⏭️ Ignorar (200 OK)",
+                                            "position":  [
+                                                             -624,
+                                                             -80
+                                                         ],
+                                            "type":  "n8n-nodes-base.respondToWebhook",
+                                            "typeVersion":  1.1
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "promptType":  "define",
+                                                               "text":  "={{ $json.message_text }}",
+                                                               "options":  {
+                                                                               "systemMessage":  "Eres ARIA, Asistente de Automatizame.uy. Trabajas con Sebastian Agradeno, fundador.\nRespondes DMs de Instagram de forma natural y profesional.\n\nREGLAS:\n1. NUNCA reveles que eres IA, bot o similar.\n2. Si preguntan si eres bot: Soy parte del equipo de Automatizame. En que te puedo ayudar?\n3. NUNCA des precios. Di: Cada proyecto es unico, Seba arma propuestas en una llamada de 30 min.\n4. NUNCA inventes datos.\n5. NO des el link de Calendly sin entender el problema primero.\n\nDATOS:\nWeb: https://automatizameuy.com\nCalendly: https://calendly.com/sebaagradeno/30min\nIG: @automatizame_uy\nUbicacion: Uruguay, atendemos LATAM y Espana\n\nSERVICIOS:\n- Automatizacion con n8n auto-hospedado\n- CRMs a medida\n- Agentes de IA para ventas y atencion\n- Contenidos con IA\n- Infraestructura Neuronal Integral\n\nESTRATEGIA:\n1. Saluda calido\n2. Pregunta sobre su negocio y problema\n3. Cuantifica lo que pierden\n4. Describe brevemente la solucion\n5. Invita a https://automatizameuy.com/ y a agendar: https://calendly.com/sebaagradeno/30min\n\nESTILO: Cercano, tuteo, mensajes CORTOS (3-4 lineas max), 1-2 emojis, solo texto plano."
+                                                                           }
+                                                           },
+                                            "id":  "ig-aria",
+                                            "name":  "🧠 ARIA - Ventas IA",
+                                            "position":  [
+                                                             -128,
+                                                             16
+                                                         ],
+                                            "type":  "@n8n/n8n-nodes-langchain.agent",
+                                            "typeVersion":  1.7
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "model":  "llama-3.3-70b-versatile",
+                                                               "options":  {
+                                                                               "maxTokensToSample":  400,
+                                                                               "temperature":  0.6
+                                                                           }
+                                                           },
+                                            "id":  "ig-groq",
+                                            "name":  "Groq (Llama-3.3 70B)",
+                                            "position":  [
+                                                             -128,
+                                                             208
+                                                         ],
+                                            "type":  "@n8n/n8n-nodes-langchain.lmChatGroq",
+                                            "typeVersion":  1,
+                                            "credentials":  {
+                                                                "groqApi":  {
+                                                                                "id":  "qr6uCVFF8OqWm4dd",
+                                                                                "name":  "Groq account 2"
+                                                                            }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "sessionIdType":  "customKey",
+                                                               "sessionKey":  "=ig_{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.sender_psid }}",
+                                                               "contextWindowLength":  20
+                                                           },
+                                            "id":  "ig-memory",
+                                            "name":  "💾 Memoria por Usuario",
+                                            "position":  [
+                                                             -32,
+                                                             208
+                                                         ],
+                                            "type":  "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+                                            "typeVersion":  1.3
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "const senderPsid = $(\u0027🔍 Extraer Mensaje\u0027).first().json.sender_psid;\nconst aiResponse = $input.first().json.output || $input.first().json.text || \u0027Disculpa, hubo un problema.\u0027;\nlet cleanResponse = aiResponse.replace(/^(assistant|aria):\\s*/gi, \u0027\u0027).trim();\nif (cleanResponse.length \u003e 1000) cleanResponse = cleanResponse.substring(0, 997) + \u0027...\u0027;\nconst msgLower = ($(\u0027🔍 Extraer Mensaje\u0027).first().json.message_text || \u0027\u0027).toLowerCase();\nlet temperature = \u0027frio\u0027;\nif (msgLower.includes(\u0027agendar\u0027) || msgLower.includes(\u0027reunion\u0027)) temperature = \u0027listo\u0027;\nelse if (msgLower.includes(\u0027precio\u0027) || msgLower.includes(\u0027presupuesto\u0027)) temperature = \u0027caliente\u0027;\nelse if (msgLower.includes(\u0027necesito\u0027) || msgLower.includes(\u0027ayuda\u0027)) temperature = \u0027tibio\u0027;\nreturn [{ json: { sender_psid: senderPsid, response_text: cleanResponse, original_message: $(\u0027🔍 Extraer Mensaje\u0027).first().json.message_text, temperature: temperature, is_hot: (temperature === \u0027caliente\u0027 || temperature === \u0027listo\u0027), timestamp: new Date().toISOString() } }];"
+                                                           },
+                                            "id":  "ig-process",
+                                            "name":  "⚙️ Procesar + Clasificar",
+                                            "position":  [
+                                                             176,
+                                                             0
+                                                         ],
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "method":  "POST",
+                                                               "url":  "=https://graph.instagram.com/v21.0/me/messages",
+                                                               "sendHeaders":  true,
+                                                               "headerParameters":  {
+                                                                                        "parameters":  [
+                                                                                                           {
+                                                                                                               "name":  "Authorization",
+                                                                                                               "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                                           },
+                                                                                                           {
+                                                                                                               "name":  "Content-Type",
+                                                                                                               "value":  "application/json"
+                                                                                                           }
+                                                                                                       ]
+                                                                                    },
+                                                               "sendBody":  true,
+                                                               "specifyBody":  "json",
+                                                               "jsonBody":  "={\n  \"recipient\": { \"id\": \"{{ $json.sender_psid }}\" },\n  \"message\": { \"text\": {{ JSON.stringify($json.response_text) }} }\n}",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "ig-send",
+                                            "name":  "📤 Responder DM Instagram",
+                                            "position":  [
+                                                             320,
+                                                             0
+                                                         ],
+                                            "type":  "n8n-nodes-base.httpRequest",
+                                            "typeVersion":  4.2
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "operation":  "executeQuery",
+                                                               "query":  "INSERT INTO ig_leads (instagram_psid, last_message, ai_response, temperature, source, created_at, updated_at)\nVALUES (\n  \u0027{{ $json.sender_psid }}\u0027,\n  \u0027{{ $json.original_message }}\u0027,\n  \u0027{{ $json.response_text }}\u0027,\n  \u0027{{ $json.temperature }}\u0027,\n  \u0027instagram_dm\u0027, NOW(), NOW()\n)\nON CONFLICT (instagram_psid)\nDO UPDATE SET\n  last_message = EXCLUDED.last_message,\n  ai_response = EXCLUDED.ai_response,\n  temperature = EXCLUDED.temperature,\n  conversation_count = ig_leads.conversation_count + 1,\n  updated_at = NOW();",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "ig-save",
+                                            "name":  "💾 Guardar/Actualizar Lead",
+                                            "position":  [
+                                                             480,
+                                                             0
+                                                         ],
+                                            "type":  "n8n-nodes-base.postgres",
+                                            "typeVersion":  2.5,
+                                            "credentials":  {
+                                                                "postgres":  {
+                                                                                 "id":  "rfMpsEPaVls9DDGX",
+                                                                                 "name":  "Postgres account 2"
+                                                                             }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "conditions":  {
+                                                                                  "combinator":  "or",
+                                                                                  "conditions":  [
+                                                                                                     {
+                                                                                                         "id":  "hot-check",
+                                                                                                         "leftValue":  "={{ $json.is_hot }}",
+                                                                                                         "operator":  {
+                                                                                                                          "operation":  "equals",
+                                                                                                                          "type":  "boolean"
+                                                                                                                      },
+                                                                                                         "rightValue":  true
+                                                                                                     }
+                                                                                                 ],
+                                                                                  "options":  {
+
+                                                                                              }
+                                                                              },
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "ig-hot",
+                                            "name":  "🔥 ¿Lead Caliente?",
+                                            "position":  [
+                                                             640,
+                                                             0
+                                                         ],
+                                            "type":  "n8n-nodes-base.if",
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "chatId":  "1301491979",
+                                                               "text":  "=LEAD CALIENTE IG!\nDijo: {{ $json.original_message }}\nARIA: {{ $json.response_text.substring(0, 200) }}\nTemp: {{ $json.temperature }}",
+                                                               "additionalFields":  {
+
+                                                                                    }
+                                                           },
+                                            "id":  "ig-telegram",
+                                            "name":  "📱 Alerta Telegram",
+                                            "position":  [
+                                                             832,
+                                                             -16
+                                                         ],
+                                            "type":  "n8n-nodes-base.telegram",
+                                            "typeVersion":  1.2,
+                                            "webhookId":  "111a89ea-2346-43c7-b046-639331eca1c9",
+                                            "credentials":  {
+                                                                "telegramApi":  {
+                                                                                    "id":  "EMkuSuIvQQU1R3I0",
+                                                                                    "name":  "automatizameuy"
+                                                                                }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "respondWith":  "json",
+                                                               "responseBody":  "={\"status\": \"ok\"}",
+                                                               "options":  {
+                                                                               "responseCode":  200
+                                                                           }
+                                                           },
+                                            "id":  "ig-respond-ok",
+                                            "name":  "✅ Responder 200 OK",
+                                            "position":  [
+                                                             768,
+                                                             208
+                                                         ],
+                                            "type":  "n8n-nodes-base.respondToWebhook",
+                                            "typeVersion":  1.1
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "path":  "instagram-dm-webhook-v2",
+                                                               "responseMode":  "responseNode",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "type":  "n8n-nodes-base.webhook",
+                                            "typeVersion":  2.1,
+                                            "position":  [
+                                                             -1008,
+                                                             -208
+                                                         ],
+                                            "id":  "96206f5d-fb2f-4ed9-a64f-49c7456f3d8e",
+                                            "name":  "Webhook",
+                                            "webhookId":  "b02f6557-8f4e-438a-92a0-6390a67cfac7"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "respondWith":  "text",
+                                                               "responseBody":  "={{ $json.query[\"hub.challenge\"] }}",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "type":  "n8n-nodes-base.respondToWebhook",
+                                            "typeVersion":  1.5,
+                                            "position":  [
+                                                             -816,
+                                                             -208
+                                                         ],
+                                            "id":  "dc48e8c9-1a7a-458b-98a7-c78615f881b4",
+                                            "name":  "Respond to Webhook"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "conditions":  {
+                                                                                  "boolean":  [
+
+                                                                                              ],
+                                                                                  "string":  [
+                                                                                                 {
+                                                                                                     "value1":  "=={{ $json.source }}",
+                                                                                                     "operation":  "contains",
+                                                                                                     "value2":  "dm"
+                                                                                                 }
+                                                                                             ]
+                                                                              }
+                                                           },
+                                            "id":  "a9cb8eec-8c43-4159-ad98-f48f3bdc789c",
+                                            "name":  "🚦 Desvío (Por ahora flotante)",
+                                            "type":  "n8n-nodes-base.if",
+                                            "typeVersion":  1,
+                                            "position":  [
+                                                             -400,
+                                                             64
+                                                         ],
+                                            "notesInFlow":  true,
+                                            "notes":  "Une aquí la salida de \u0027Extraer Mensaje\u0027"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "conditions":  {
+                                                                                  "string":  [
+                                                                                                 {
+                                                                                                     "value1":  "={{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.message_text.toLowerCase() }}",
+                                                                                                     "operation":  "regex",
+                                                                                                     "value2":  "(automatizame|automatizade|automatizameuy|yo quiero|ayuda|proceso|proseso)"
+                                                                                                 }
+                                                                                             ]
+                                                                              }
+                                                           },
+                                            "id":  "3e4c0f16-9dec-44c1-ab50-8d068f91231f",
+                                            "name":  "🔍 Filtro: Palabra Clave",
+                                            "type":  "n8n-nodes-base.if",
+                                            "typeVersion":  1,
+                                            "position":  [
+                                                             -320,
+                                                             384
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "method":  "POST",
+                                                               "url":  "=https://graph.instagram.com/v21.0/{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.message_id }}/replies",
+                                                               "sendHeaders":  true,
+                                                               "headerParameters":  {
+                                                                                        "parameters":  [
+                                                                                                           {
+                                                                                                               "name":  "Authorization",
+                                                                                                               "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                                           }
+                                                                                                       ]
+                                                                                    },
+                                                               "sendBody":  true,
+                                                               "specifyBody":  "json",
+                                                               "jsonBody":  "={ \"message\": \"¡Listo! ✨ Mira tu DM, ya te envié lo que pediste 😉\" }",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "3d52dd5c-3370-409d-8d7d-b8ab676b68a9",
+                                            "name":  "🗣️ Comentar Público",
+                                            "type":  "n8n-nodes-base.httpRequest",
+                                            "typeVersion":  4.1,
+                                            "position":  [
+                                                             -112,
+                                                             368
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "method":  "POST",
+                                                               "url":  "https://graph.instagram.com/v21.0/me/messages",
+                                                               "sendHeaders":  true,
+                                                               "headerParameters":  {
+                                                                                        "parameters":  [
+                                                                                                           {
+                                                                                                               "name":  "Authorization",
+                                                                                                               "value":  "Bearer IGAF2ZADZAybWgdBZAFp1aTNIbnpHOEM5eERhY0tKTU1QNTRPejdjQUt2V081STZAUbElOVlA4cFlrbGFYNEwzd1pKWmZAfZAjVob3o0QUFRR1kwRFBpNVVxMGtLUHBMYmxuY3QtNFhBdERJdDFoMzFQODJZAc1RXZAnVjVnppWkRBYVd6awZDZD"
+                                                                                                           }
+                                                                                                       ]
+                                                                                    },
+                                                               "sendBody":  true,
+                                                               "specifyBody":  "json",
+                                                               "jsonBody":  "={\n  \"recipient\": {\"id\": \"{{ $(\u0027🔍 Extraer Mensaje\u0027).item.json.sender_psid }}\"},\n  \"message\": {\n    \"attachment\": {\n      \"type\": \"template\",\n      \"payload\": {\n        \"template_type\": \"generic\",\n        \"elements\": [\n          {\n            \"title\": \"¡Hola! 🚀 Estás a un paso de escalar tu negocio.\",\n            \"subtitle\": \"¿Cómo prefieres avanzar? 👇\",\n            \"buttons\": [\n              {\n                \"type\": \"web_url\",\n                \"url\": \"https://automatizameuy.com\",\n                \"title\": \"🌐 IA Web\"\n              },\n              {\n                \"type\": \"web_url\",\n                \"url\": \"https://wa.me/59897595464?text=Hola%20Automat%C3%ADzame%2C%20quiero%20mejorar%20los%20procesos%20de%20mi%20empresa.\",\n                \"title\": \"💬 WhatsApp\"\n              }\n            ]\n          }\n        ]\n      }\n    }\n  }\n}",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "7c1f022a-b68e-481f-8d29-e631ac45bf05",
+                                            "name":  "📤 DM (La Botonera)",
+                                            "type":  "n8n-nodes-base.httpRequest",
+                                            "typeVersion":  4.1,
+                                            "position":  [
+                                                             64,
+                                                             368
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "respondWith":  "json",
+                                                               "responseBody":  "={\"status\": \"ok\"}",
+                                                               "options":  {
+                                                                               "responseCode":  200
+                                                                           }
+                                                           },
+                                            "id":  "674c9274-1f53-4f1a-ad6a-32bc77fabdb5",
+                                            "name":  "✅ Responder 200 OK1",
+                                            "position":  [
+                                                             256,
+                                                             368
+                                                         ],
+                                            "type":  "n8n-nodes-base.respondToWebhook",
+                                            "typeVersion":  1.1
+                                        }
+                                    ],
+                          "connections":  {
+                                              "Groq (Llama-3.3 70B)":  {
+                                                                           "ai_languageModel":  [
+                                                                                                    [
+                                                                                                        {
+                                                                                                            "index":  0,
+                                                                                                            "node":  "🧠 ARIA - Ventas IA",
+                                                                                                            "type":  "ai_languageModel"
+                                                                                                        }
+                                                                                                    ]
+                                                                                                ]
+                                                                       },
+                                              "⚙️ Procesar + Clasificar":  {
+                                                                               "main":  [
+                                                                                            [
+                                                                                                {
+                                                                                                    "index":  0,
+                                                                                                    "node":  "📤 Responder DM Instagram",
+                                                                                                    "type":  "main"
+                                                                                                }
+                                                                                            ]
+                                                                                        ]
+                                                                           },
+                                              "⚡ ¿Mensaje Válido?":  {
+                                                                         "main":  [
+                                                                                      [
+                                                                                          {
+                                                                                              "node":  "🚦 Desvío (Por ahora flotante)",
+                                                                                              "type":  "main",
+                                                                                              "index":  0
+                                                                                          }
+                                                                                      ],
+                                                                                      [
+                                                                                          {
+                                                                                              "index":  0,
+                                                                                              "node":  "⏭️ Ignorar (200 OK)",
+                                                                                              "type":  "main"
+                                                                                          }
+                                                                                      ]
+                                                                                  ]
+                                                                     },
+                                              "💾 Guardar/Actualizar Lead":  {
+                                                                                 "main":  [
+                                                                                              [
+                                                                                                  {
+                                                                                                      "index":  0,
+                                                                                                      "node":  "🔥 ¿Lead Caliente?",
+                                                                                                      "type":  "main"
+                                                                                                  }
+                                                                                              ]
+                                                                                          ]
+                                                                             },
+                                              "💾 Memoria por Usuario":  {
+                                                                             "ai_memory":  [
+                                                                                               [
+                                                                                                   {
+                                                                                                       "index":  0,
+                                                                                                       "node":  "🧠 ARIA - Ventas IA",
+                                                                                                       "type":  "ai_memory"
+                                                                                                   }
+                                                                                               ]
+                                                                                           ]
+                                                                         },
+                                              "📤 Responder DM Instagram":  {
+                                                                                "main":  [
+                                                                                             [
+                                                                                                 {
+                                                                                                     "index":  0,
+                                                                                                     "node":  "💾 Guardar/Actualizar Lead",
+                                                                                                     "type":  "main"
+                                                                                                 }
+                                                                                             ]
+                                                                                         ]
+                                                                            },
+                                              "📥 Instagram Webhook":  {
+                                                                           "main":  [
+                                                                                        [
+                                                                                            {
+                                                                                                "index":  0,
+                                                                                                "node":  "🔍 Extraer Mensaje",
+                                                                                                "type":  "main"
+                                                                                            }
+                                                                                        ]
+                                                                                    ]
+                                                                       },
+                                              "📱 Alerta Telegram":  {
+                                                                         "main":  [
+                                                                                      [
+                                                                                          {
+                                                                                              "index":  0,
+                                                                                              "node":  "✅ Responder 200 OK",
+                                                                                              "type":  "main"
+                                                                                          }
+                                                                                      ]
+                                                                                  ]
+                                                                     },
+                                              "🔍 Extraer Mensaje":  {
+                                                                         "main":  [
+                                                                                      [
+                                                                                          {
+                                                                                              "index":  0,
+                                                                                              "node":  "⚡ ¿Mensaje Válido?",
+                                                                                              "type":  "main"
+                                                                                          }
+                                                                                      ]
+                                                                                  ]
+                                                                     },
+                                              "🔥 ¿Lead Caliente?":  {
+                                                                         "main":  [
+                                                                                      [
+                                                                                          {
+                                                                                              "index":  0,
+                                                                                              "node":  "📱 Alerta Telegram",
+                                                                                              "type":  "main"
+                                                                                          }
+                                                                                      ],
+                                                                                      [
+                                                                                          {
+                                                                                              "index":  0,
+                                                                                              "node":  "✅ Responder 200 OK",
+                                                                                              "type":  "main"
+                                                                                          }
+                                                                                      ]
+                                                                                  ]
+                                                                     },
+                                              "🧠 ARIA - Ventas IA":  {
+                                                                          "main":  [
+                                                                                       [
+                                                                                           {
+                                                                                               "index":  0,
+                                                                                               "node":  "⚙️ Procesar + Clasificar",
+                                                                                               "type":  "main"
+                                                                                           }
+                                                                                       ]
+                                                                                   ]
+                                                                      },
+                                              "Webhook":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Respond to Webhook",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                                              "🚦 Desvío (Por ahora flotante)":  {
+                                                                                     "main":  [
+                                                                                                  [
+                                                                                                      {
+                                                                                                          "node":  "🧠 ARIA - Ventas IA",
+                                                                                                          "type":  "main",
+                                                                                                          "index":  0
+                                                                                                      }
+                                                                                                  ],
+                                                                                                  [
+                                                                                                      {
+                                                                                                          "node":  "🔍 Filtro: Palabra Clave",
+                                                                                                          "type":  "main",
+                                                                                                          "index":  0
+                                                                                                      }
+                                                                                                  ]
+                                                                                              ]
+                                                                                 },
+                                              "🔍 Filtro: Palabra Clave":  {
+                                                                               "main":  [
+                                                                                            [
+                                                                                                {
+                                                                                                    "node":  "🗣️ Comentar Público",
+                                                                                                    "type":  "main",
+                                                                                                    "index":  0
+                                                                                                }
+                                                                                            ],
+                                                                                            [
+                                                                                                {
+                                                                                                    "node":  "✅ Responder 200 OK1",
+                                                                                                    "type":  "main",
+                                                                                                    "index":  0
+                                                                                                }
+                                                                                            ]
+                                                                                        ]
+                                                                           },
+                                              "🗣️ Comentar Público":  {
+                                                                           "main":  [
+                                                                                        [
+                                                                                            {
+                                                                                                "node":  "📤 DM (La Botonera)",
+                                                                                                "type":  "main",
+                                                                                                "index":  0
+                                                                                            }
+                                                                                        ]
+                                                                                    ]
+                                                                       },
+                                              "📤 DM (La Botonera)":  {
+                                                                          "main":  [
+                                                                                       [
+                                                                                           {
+                                                                                               "node":  "✅ Responder 200 OK1",
+                                                                                               "type":  "main",
+                                                                                               "index":  0
+                                                                                           }
+                                                                                       ]
+                                                                                   ]
+                                                                      }
+                                          },
+                          "authors":  "sebastian De pro Agradeño",
+                          "name":  "Version b4c84f78",
+                          "description":  "",
+                          "autosaved":  true,
+                          "workflowPublishHistory":  [
+                                                         {
+                                                             "createdAt":  "2026-04-04T04:12:11.319Z",
+                                                             "id":  267,
+                                                             "workflowId":  "8Mv1OO1JTWJOHFMa",
+                                                             "versionId":  "b4c84f78-d815-45d1-94eb-bf168cc6e329",
+                                                             "event":  "activated",
+                                                             "userId":  "f7d8208a-c01e-40d7-85ea-e1286474c998"
+                                                         }
+                                                     ]
+                      }
+}

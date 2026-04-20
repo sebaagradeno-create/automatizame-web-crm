@@ -1,0 +1,137 @@
+{
+  "name": "💰 Sistema de Pagos — Stripe + Mercado Pago",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "stripe-wh",
+      "name": "📥 Stripe Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"received\": true}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "stripe-ack",
+      "name": "✅ ACK Stripe",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [460, 180]
+    },
+    {
+      "parameters": {
+        "jsCode": "const event = $input.first().json.body || $input.first().json;\nconst type = event.type || '';\nconst session = event.data?.object || {};\nreturn [{\n  json: {\n    event_type: type,\n    payment_status: session.payment_status || session.status || '',\n    amount: (session.amount_total || session.amount || 0) / 100,\n    currency: session.currency || 'usd',\n    customer_email: session.customer_details?.email || session.customer_email || '',\n    customer_name: session.customer_details?.name || '',\n    metadata: session.metadata || {},\n    session_id: session.id || ''\n  }\n}];"
+      },
+      "id": "stripe-parse",
+      "name": "⚙️ Parsear Evento Stripe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "id": "pago-check",
+              "leftValue": "={{ $json.payment_status }}",
+              "rightValue": "paid",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "stripe-if",
+      "name": "💳 Pago Aprobado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [680, 320]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE clientes SET estado = 'cliente_pago', updated_at = NOW(), notas = CONCAT(COALESCE(notas,''), ' | PAGO STRIPE: ${{ $json.amount }} {{ $json.currency }} - ', NOW()::date) WHERE email = '{{ $json.customer_email }}' RETURNING id, nombre, email;",
+        "options": {}
+      },
+      "id": "stripe-db",
+      "name": "💾 Actualizar CRM",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [900, 220],
+      "credentials": {
+        "postgres": {
+          "id": "rfMpsEPaVls9DDGX",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5748737739",
+        "text": "=💰 *PAGO RECIBIDO*\n\n👤 Cliente: {{ $('⚙️ Parsear Evento Stripe').item.json.customer_name || 'Sin nombre' }}\n📧 Email: {{ $('⚙️ Parsear Evento Stripe').item.json.customer_email }}\n💵 Monto: ${{ $('⚙️ Parsear Evento Stripe').item.json.amount }} {{ $('⚙️ Parsear Evento Stripe').item.json.currency.toUpperCase() }}\n🆔 Session: {{ $('⚙️ Parsear Evento Stripe').item.json.session_id }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "stripe-tg",
+      "name": "📱 Notificar Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 220],
+      "credentials": {
+        "telegramApi": {
+          "id": "vyClPi8ITzGB8wPW",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5748737739",
+        "text": "=⚠️ *PAGO FALLIDO O PENDIENTE*\n\nEvento: {{ $json.event_type }}\nEmail: {{ $json.customer_email }}\nEstado: {{ $json.payment_status }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "stripe-fail",
+      "name": "⚠️ Alerta Pago Fallido",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 440],
+      "credentials": {
+        "telegramApi": {
+          "id": "vyClPi8ITzGB8wPW",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "📥 Stripe Webhook": {
+      "main": [[
+        {"node": "✅ ACK Stripe", "type": "main", "index": 0},
+        {"node": "⚙️ Parsear Evento Stripe", "type": "main", "index": 0}
+      ]]
+    },
+    "⚙️ Parsear Evento Stripe": {
+      "main": [[{"node": "💳 Pago Aprobado?", "type": "main", "index": 0}]]
+    },
+    "💳 Pago Aprobado?": {
+      "main": [
+        [{"node": "💾 Actualizar CRM", "type": "main", "index": 0}],
+        [{"node": "⚠️ Alerta Pago Fallido", "type": "main", "index": 0}]
+      ]
+    },
+    "💾 Actualizar CRM": {
+      "main": [[{"node": "📱 Notificar Telegram", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null
+}

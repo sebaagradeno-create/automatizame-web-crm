@@ -1,0 +1,108 @@
+{
+  "name": "🏠 Captación MeLi - Receptor Local",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hunter-local-meli-v1",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "📥 Webhook Hunter Local",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "hunter-local-meli-v1",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Limpiamos los datos para que PostgreSQL no se queje\nconst item = $input.first().json;\n\nreturn [{\n  json: {\n    titulo: item.titulo || 'Sin título',\n    precio: parseFloat(item.precio) || 0,\n    moneda: item.moneda || 'USD',\n    url_original: item.link || item.url_original,\n    barrio: item.barrio || '',\n    dormitorios: parseInt(item.dormitorios) || 0,\n    banios: parseInt(item.banios) || 0,\n    imagen_principal: item.imagen || '',\n    tipo_operacion: item.tipo_operacion || 'alquiler',\n    fuente: 'meli_hunter_local',\n    garaje: !!item.garaje,\n    piscina: !!item.piscina\n  }\n}];"
+      },
+      "name": "Limpiar Datos",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        460,
+        300
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO propiedades_inmobiliaria (titulo, precio, moneda, url_original, barrio, dormitorios, banios, imagen_principal, tipo_operacion, fuente, garaje, piscina)\nVALUES (\n  '{{ $json.titulo }}', \n  {{ $json.precio }}, \n  '{{ $json.moneda }}', \n  '{{ $json.url_original }}', \n  '{{ $json.barrio }}', \n  {{ $json.dormitorios }}, \n  {{ $json.banios }}, \n  '{{ $json.imagen_principal }}', \n  '{{ $json.tipo_operacion }}', \n  '{{ $json.fuente }}', \n  {{ $json.garaje }}, \n  {{ $json.piscina }}\n)\nON CONFLICT (url_original) DO UPDATE SET \n  precio = EXCLUDED.precio, \n  updated_at = NOW();"
+      },
+      "name": "💾 Guardar en Destino Abril",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        680,
+        300
+      ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "mQ2D5EMzZtnxUQup",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1301491979",
+        "text": "=🏠 ¡CAZA LOCAL EXITOSA!\n\n{{ $json.titulo }}\n💰 {{ $json.moneda }} {{ $json.precio }}\n📍 {{ $json.barrio }}\n🔗 {{ $json.url_original }}"
+      },
+      "name": "📱 Notificar a Seba",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        900,
+        300
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "automatizameuy"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "📥 Webhook Hunter Local": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Datos": {
+      "main": [
+        [
+          {
+            "node": "💾 Guardar en Destino Abril",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Guardar en Destino Abril": {
+      "main": [
+        [
+          {
+            "node": "📱 Notificar a Seba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

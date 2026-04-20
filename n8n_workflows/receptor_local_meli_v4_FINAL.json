@@ -1,0 +1,87 @@
+{
+  "name": "🏠 Captación MeLi - Receptor Local (v4 FINAL FOTOS)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hunter-local-meli-v1",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "📥 Webhook Hunter Local",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "hunter-local-meli-v1",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const inputData of items) {\n  const data = inputData.json.body || inputData.json;\n  const properties = Array.isArray(data) ? data : [data];\n  \n  for (const item of properties) {\n    results.push({\n      json: {\n        titulo: item.titulo || 'Sin título',\n        precio: parseFloat(item.precio) || 0,\n        moneda: item.moneda || 'USD',\n        url_original: item.link || item.url || '',\n        barrio: item.barrio || 'No especificado',\n        imagen_principal: item.fotos && item.fotos.length > 0 ? item.fotos[0] : (item.imagen || 'https://www.inmobiliaria.com.uy/images/no-image.jpg'),\n        imagenes: JSON.stringify(item.fotos || []),\n        descripcion: item.descripcion || '',\n        tipo_operacion: item.tipo_operacion || 'alquiler',\n        es_dueno_directo: !!item.es_dueno_directo,\n        num_fotos: item.fotos ? item.fotos.length : (item.imagen ? 1 : 0),\n        fuente: 'meli_hunter_local_pro'\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "name": "Limpiar Datos",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        460,
+        300
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO propiedades_inmobiliaria (titulo, precio, moneda, url_original, barrio, imagen_principal, imagenes, descripcion, tipo_operacion, es_dueno_directo, fuente)\nVALUES (\n  '{{ $json.titulo.replace(/'/g, \"''\") }}', \n  {{ $json.precio }}, \n  '{{ $json.moneda }}', \n  '{{ $json.url_original }}', \n  '{{ $json.barrio }}', \n  '{{ $json.imagen_principal }}', \n  '{{ $json.imagenes }}', \n  '{{ $json.descripcion.replace(/'/g, \"''\") }}', \n  '{{ $json.tipo_operacion }}', \n  {{ $json.es_dueno_directo }}, \n  '{{ $json.fuente }}'\n)\nON CONFLICT (url_original) DO UPDATE SET \n  precio = EXCLUDED.precio, \n  imagenes = EXCLUDED.imagenes, \n  descripcion = EXCLUDED.descripcion, \n  es_dueno_directo = EXCLUDED.es_dueno_directo,\n  updated_at = NOW()\nRETURNING *;"
+      },
+      "name": "💾 Guardar Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "position": [ 680, 180 ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": { "id": "mQ2D5EMzZtnxUQup", "name": "Postgres account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nfor (const item of $input.all()) {\n  // Rescatar los datos limpios originales (o los de DB si RETURNING * funcionó)\n  const data = $('Limpiar Datos').item.json || item.json;\n  \n  let mensaje = `<a href=\"${data.imagen_principal || ''}\">&#8205;</a>\\n`;\n  mensaje += data.es_dueno_directo ? '🥷 <b>¡ALERTA DUEÑO DIRECTO!</b> 🔥\\n\\n' : '🏠 <b>NUEVA PROPIEDAD DETECTADA</b>\\n\\n';\n  mensaje += `🏷️ <b>${data.titulo || 'Sin título'}</b>\\n`;\n  mensaje += `💰 ${data.moneda || 'USD'} ${data.precio || 0}\\n`;\n  mensaje += `📍 ${data.barrio || 'Sin ubicación'}\\n`;\n  mensaje += `──────────────────\\n`;\n  mensaje += `🔗 <a href=\"${data.url_original || ''}\">Enlace Oficial</a>\\n`;\n  if (data.num_fotos) mensaje += `\\n📸 Total capturadas: ${data.num_fotos} fotos.`;\n  \n  results.push({\n    json: {\n      ...data,\n      mensaje_telegram: mensaje\n    }\n  });\n}\nreturn results;"
+      },
+      "name": "Preparar Mensaje",
+      "type": "n8n-nodes-base.code",
+      "position": [ 900, 180 ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "1301491979",
+        "text": "={{ $json.mensaje_telegram }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "📱 Foto a Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [ 1120, 180 ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": { "id": "EMkuSuIvQQU1R3I0", "name": "asistente" }
+      }
+    }
+  ],
+  "connections": {
+    "📥 Webhook Hunter Local": {
+      "main": [ [ { "node": "Limpiar Datos", "type": "main", "index": 0 } ] ]
+    },
+    "Limpiar Datos": {
+      "main": [ [ { "node": "💾 Guardar Postgres", "type": "main", "index": 0 } ] ]
+    },
+    "💾 Guardar Postgres": {
+      "main": [ [ { "node": "Preparar Mensaje", "type": "main", "index": 0 } ] ]
+    },
+    "Preparar Mensaje": {
+      "main": [ [ { "node": "📱 Foto a Telegram", "type": "main", "index": 0 } ] ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

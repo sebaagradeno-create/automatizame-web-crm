@@ -1,0 +1,29 @@
+https://www.remotion.dev/docs/ai/skills
+
+Claude Managed Agents 
+Es un conjunto de APIs lanzado por Anthropic (8 de abril de 2026) que permite construir y desplegar agentes de IA en la nube sin tener que construir la infraestructura desde cero.
+Hasta ahora, crear un agente en producción requería semanas o meses de trabajo técnico: sandboxing seguro, manejo de estado, autenticación, permisos, rastreo de errores. Con Managed Agents, todo eso viene incluido. Vos definís la tarea, las herramientas y los límites del agente. Anthropic se encarga del resto.
+El resultado: ir de prototipo a producción hasta 10 veces más rápido.
+¿Qué incluye?
+Agentes listos para producción — sandboxing, autenticación y ejecución de herramientas ya están resueltos.
+Sesiones de larga duración — el agente puede trabajar de forma autónoma durante horas, con progreso y resultados que persisten aunque se corte la conexión.
+Coordinación multi-agente — un agente puede crear y dirigir a otros agentes en paralelo para tareas complejas (en research preview).
+Gobernanza con permisos — acceso a sistemas reales con permisos acotados, gestión de identidad y trazabilidad de cada ejecución.
+¿Cómo usarlo?
+Managed Agents está disponible hoy en beta pública en la Claude Platform.
+Hay tres formas de empezar:
+Ir directo a la Claude Console y usar el quickstart.
+Leer la documentación oficial.
+Desde Claude Code: escribir  y el Skill integrado guía el proceso.
+Precio: tarifas estándar de tokens de la plataforma + USD 0.08 por hora de sesión activa.
+ 4 Ideas de Agentes para Implementar
+1. Agente de Onboarding de Clientes (Consultoras / Servicios)
+El agente recibe los documentos del nuevo cliente (contratos, briefings, formularios), los procesa, extrae información clave, completa una base de datos interna y genera un resumen ejecutivo listo para el equipo. Sin intervención humana en el paso de captura de datos.
+2. Agente de Monitoreo y Reporte de Campañas Digitales
+Se conecta a Meta Ads, Google Ads y Analytics. Cada mañana consolida métricas, identifica alertas según umbrales definidos (ej: costo por resultado fuera de rango), y genera un reporte en Notion o Google Sheets con recomendaciones de acción.
+3. Agente de Soporte Interno para Equipos Corporativos
+Integrado en Slack o Teams, recibe preguntas del equipo sobre políticas internas, procedimientos, beneficios o estados de proyectos. Busca en la base de conocimiento de la empresa, genera respuestas precisas y escala a humanos solo cuando es necesario.
+4. Agente de Generación de Propuestas Comerciales
+Dado un brief del prospecto (industria, tamaño, desafío), el agente busca casos similares, selecciona el framework de propuesta correcto, redacta la propuesta completa en Google Docs o Word, y la deja lista para revisión en menos de 5 minutos.
+ Recursos
+Blog oficial de Anthropic · Documentación técnica · Quickstart en Console

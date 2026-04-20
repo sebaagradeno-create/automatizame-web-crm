@@ -1,0 +1,220 @@
+{
+  "name": "🎬 IA Viral Generator - Automatízame PRO (v5 INTERACTIVO)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "name": "Cada 4 Horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Genera el post de alto impacto para hoy de forma aleatoria.\n\nESTRUCTURA DEL POST (Caption):\n🚀 ¿Tienes una [tipo de negocio]?\n[Frase potente sobre dolor]\n[Frase potente sobre solución con Automatízame.uy]\nComenta 'AUTOMATIZAME' y recupera tu tiempo libre. 🦾✨\n\nREGLA DE IMAGEN:\n- Prompt en INGLÉS. Formato PORTRAIT (4:5)\n- Estilo: Photorealistic, cinematic lighting, glassmorphism cyborg con humanos.\n- OBLIGATORIO: Texto 'AUTOMATIZAMEUY.COM' visible en la imagen.\n",
+        "options": {
+          "systemMessage": "Eres el Director Creativo de Automatizame.uy. Usa: [CAPTION] y [IMAGE_PROMPT] para separar el contenido."
+        }
+      },
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-pro-vision",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.output.split('[IMAGE_PROMPT]')[1].trim() }}",
+        "options": {}
+      },
+      "name": "Generate an image",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        300
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GjNcpfBPkLl05TYn",
+          "name": "Google Gemini(PaLM) Api account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "additionalFieldsFile": {}
+      },
+      "name": "Cargar en Cloudinary",
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        860,
+        300
+      ],
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "2O1MemHlGqL0VBIA",
+          "name": "Cloudinary account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nreturn [{\n  json: {\n    ...item,\n    caption_final: $node[\"AI Agent\"].json.output.split('[CAPTION]')[1].split('[IMAGE_PROMPT]')[0].trim()\n  }\n}];"
+      },
+      "name": "Limpiar Caption",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "1301491979",
+        "text": "=🤖 SEBA, GENERÉ ESTE POST.\n\nSE PUBLICARÁ AUTOMÁTICAMENTE EN 5 MINUTOS ⏳\n\n📝 TEXTO:\n{{ $json.caption_final }}\n\n📸 FOTO: {{ $json.secure_url }}\n\n(Si no te gusta, pausa el flujo en n8n)"
+      },
+      "name": "📱 Aviso de 5 Minutos",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1300,
+        180
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "8755605991:AAHlpJpS7vLzE_BwH_K9Uv_Z_XzRj_t9-oM",
+          "name": "Aria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "minutes"
+      },
+      "name": "⏳ Espera 5 Minutos",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "node": "17841440704562352",
+        "imageUrl": "={{ $node[\"Limpiar Caption\"].json.secure_url }}",
+        "caption": "={{ $node[\"Limpiar Caption\"].json.caption_final }}",
+        "additionalFields": {}
+      },
+      "name": "🚀 Publicar Instagram",
+      "type": "@mookielianhd/n8n-nodes-instagram.instagram",
+      "typeVersion": 1,
+      "position": [
+        1550,
+        420
+      ],
+      "credentials": {
+        "instagramApi": {
+          "id": "isXIWWDyIfPfKX0w",
+          "name": "Instagram account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 4 Horas": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Cargar en Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar en Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Caption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Caption": {
+      "main": [
+        [
+          {
+            "node": "📱 Aviso de 5 Minutos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "⏳ Espera 5 Minutos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Espera 5 Minutos": {
+      "main": [
+        [
+          {
+            "node": "🚀 Publicar Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

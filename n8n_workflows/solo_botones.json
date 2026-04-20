@@ -1,0 +1,54 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1301491979",
+        "photo": "={{ $json.secure_url }}",
+        "caption": "=🤖 SEBA, REVISA EL POST.\n\n📝 TEXTO:\n{{ $json.caption_final }}\n\nElige una opción:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "inline_keyboard": [
+            [
+              {
+                "text": "✅ Publicar Ahora",
+                "url": "={{$execution.resumeUrl}}?action=si"
+              },
+              {
+                "text": "❌ Cancelar / Re-hacer",
+                "url": "={{$execution.resumeUrl}}?action=no"
+              }
+            ]
+          ]
+        }
+      },
+      "name": "Telegram con Botones",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1300,
+        150
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": 5,
+        "unit": "minutes"
+      },
+      "name": "Esperar Clic o Tiempo",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1550,
+        150
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "hunter-local",
+  "version": "1.0.0",
+  "description": "Agente Hunter Local para Mercado Libre Uruguay",
+  "main": "hunter_local.js",
+  "scripts": {
+    "alquileres": "node hunter_local.js alquiler",
+    "ventas": "node hunter_local.js venta",
+    "start": "node hunter_local.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "colors": "^1.4.0",
+    "prompts": "^2.4.2",
+    "puppeteer": "^22.6.0"
+  }
+}

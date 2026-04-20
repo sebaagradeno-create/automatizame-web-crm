@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "postgres-n8n": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:40dcba6f88baf56652fc@127.0.0.1:5454/automatizacion1"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "d:/AGENCIA MASTER/automatizame"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "BSAdSfz2Y6Pd6wA03ZtlsQJ9Eaq8V9C"
+      }
+    }
+  }
+}

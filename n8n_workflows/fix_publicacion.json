@@ -1,0 +1,83 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst originalBinary = item.binary ? Object.keys(item.binary)[0] : 'data';\n\n// Extraer el texto de la publicación del Output de la IA\nlet caption = \"\";\ntry {\n  caption = $node[\"AI Agent\"].json.output.split('[CAPTION]')[1].split('[IMAGE_PROMPT]')[0].trim();\n} catch(e) {\n  caption = \"Innovando el futuro en automatizameuy.com 🦾✨\"; // Respaldo por si la IA falla\n}\n\nreturn [{\n  json: {\n    ...item.json,\n    caption_final: caption\n  },\n  binary: {\n    data: item.binary[originalBinary]\n  }\n}];"
+      },
+      "name": "🔧 Preparar Imagen y Texto",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1260,
+        -660
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "filePropertyName": "data",
+        "additionalFieldsFile": {}
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -660
+      ],
+      "id": "344bdb46-53c4-45f1-8ce6-66662e2b01dc",
+      "name": "Upload an asset from file data",
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "2O1MemHlGqL0VBIA",
+          "name": "Cloudinary account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "node": "17841440704562352",
+        "imageUrl": "={{ $json.secure_url }}",
+        "caption": "={{ $node[\"🔧 Preparar Imagen y Texto\"].json.caption_final }}",
+        "additionalFields": {}
+      },
+      "type": "@mookielianhd/n8n-nodes-instagram.instagram",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        -660
+      ],
+      "id": "342c7af4-5d50-479c-a604-fb85e75ec9f0",
+      "name": "Publish",
+      "credentials": {
+        "instagramApi": {
+          "id": "isXIWWDyIfPfKX0w",
+          "name": "Instagram account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "🔧 Preparar Imagen y Texto": {
+      "main": [
+        [
+          {
+            "node": "Upload an asset from file data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload an asset from file data": {
+      "main": [
+        [
+          {
+            "node": "Publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

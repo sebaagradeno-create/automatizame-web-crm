@@ -1,0 +1,87 @@
+{
+  "name": "🤖 Agente Seba — Bot Telegram (Groq + Servidor)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "trigger-001",
+      "name": "📱 Telegram — Escuchar Mensajes",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 300],
+      "webhookId": "agente-seba-bot-001",
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente personal11"
+        }
+      },
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      }
+    },
+    {
+      "id": "filter-001",
+      "name": "🔒 Solo Chat de Seba",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "id": "a1",
+              "leftValue": "={{ $json.message.chat.id.toString() }}",
+              "rightValue": "1301491979",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "exec-001",
+      "name": "⚙️ Ejecutar Agente en Servidor",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [440, 200],
+      "parameters": {
+        "command": "={{ '/root/agente-seba/run.sh ' + JSON.stringify($json.message.text).replace(/'/g, \"'\\\\''\") + ' ' + $json.message.chat.id }}"
+      }
+    },
+    {
+      "id": "blocked-001",
+      "name": "🚫 Acceso Denegado",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [440, 420],
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente personal11"
+        }
+      },
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "🚫 No autorizado.",
+        "additionalFields": {}
+      }
+    }
+  ],
+  "connections": {
+    "📱 Telegram — Escuchar Mensajes": {
+      "main": [[{ "node": "🔒 Solo Chat de Seba", "type": "main", "index": 0 }]]
+    },
+    "🔒 Solo Chat de Seba": {
+      "main": [
+        [{ "node": "⚙️ Ejecutar Agente en Servidor", "type": "main", "index": 0 }],
+        [{ "node": "🚫 Acceso Denegado", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "YXm4qW9YC0wGsboY"
+  }
+}

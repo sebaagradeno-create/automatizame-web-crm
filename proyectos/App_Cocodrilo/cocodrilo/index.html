@@ -667,6 +667,16 @@
       </div>
     </div>
 
+    <div class="settings-group">
+      <div class="settings-lbl">API PostgreSQL</div>
+      <input class="settings-input" id="sPgApiUrl" type="text" placeholder="https://cocodrilo.automatizameuy.com/api">
+      <div style="font-size:11px;color:var(--text-muted);padding:2px 2px 0;">
+        URL del servidor Node.js que conecta a PostgreSQL en el VPS.
+      </div>
+    </div>
+
+    <div id="postgresStatus" style="font-size:12px;padding:10px;border-radius:8px;margin-bottom:10px;display:none;"></div>
+
     <button class="btn btn-primary"   onclick="guardarAjustes()">Guardar ajustes</button>
     <button class="btn btn-secondary" onclick="exportarJSON()">Exportar datos JSON</button>
     <button class="btn btn-danger"    onclick="borrarTodo()">Borrar todos los datos</button>
@@ -783,14 +793,64 @@ const M = { tipo: 'gasto', moneda: 'UYU' };
 let filtCat = 'todas', filtMon = 'todas';
 let gastosDetectados = [], chatHistory = [], pantallaActual = 'inicio';
 let interstitialMostrado = false;
+let postgresOK = false;
 
-// ===== STORAGE =====
-const getData    = () => JSON.parse(localStorage.getItem('croc_data')    || '[]');
-const setData    = d => localStorage.setItem('croc_data', JSON.stringify(d));
-const getCfg     = () => JSON.parse(localStorage.getItem('croc_cfg')     || '{"limite":50000,"apiKey":""}');
-const setCfg     = c => localStorage.setItem('croc_cfg', JSON.stringify(c));
-const getUsuario = () => JSON.parse(localStorage.getItem('croc_user')    || '{"nombre":""}');
-const setUsuario = u => localStorage.setItem('croc_user', JSON.stringify(u));
+// ===== CONFIG POSTGRESQL =====
+const PG_API_URL = localStorage.getItem('pg_api_url') || 'https://cocodrilo.automatizameuy.com/api';
+
+// ===== INICIALIZAR CONEXIÓN =====
+async function initPostgres() {
+  try {
+    const resp = await fetch(PG_API_URL + '/health', { method: 'GET' });
+    if (resp.ok) {
+      postgresOK = true;
+      console.log('[PostgreSQL] Conectado');
+    } else {
+      throw new Error('API no disponible');
+    }
+  } catch (err) {
+    console.warn('[PostgreSQL] Error de conexión:', err.message);
+    postgresOK = false;
+  }
+}
+
+// ===== STORAGE CON FALLBACK =====
+const getData = async () => {
+  if (postgresOK) {
+    try {
+      const resp = await fetch(PG_API_URL + '/movimientos', { method: 'GET' });
+      if (resp.ok) {
+        const data = await resp.json();
+        localStorage.setItem('croc_data', JSON.stringify(data));
+        return data;
+      }
+    } catch (err) {
+      console.warn('[PostgreSQL] Error al obtener datos:', err);
+    }
+  }
+  return JSON.parse(localStorage.getItem('croc_data') || '[]');
+};
+
+const setData = async (d) => {
+  localStorage.setItem('croc_data', JSON.stringify(d));
+
+  if (!postgresOK) return;
+
+  try {
+    await fetch(PG_API_URL + '/movimientos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(d)
+    });
+  } catch (err) {
+    console.warn('[PostgreSQL] Error al guardar:', err);
+  }
+};
+
+const getCfg = () => JSON.parse(localStorage.getItem('croc_cfg') || '{"limite":50000,"apiKey":""}');
+const setCfg = (c) => localStorage.setItem('croc_cfg', JSON.stringify(c));
+const getUsuario = () => JSON.parse(localStorage.getItem('croc_user') || '{"nombre":""}');
+const setUsuario = (u) => localStorage.setItem('croc_user', JSON.stringify(u));
 
 // ===== HELPERS =====
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
@@ -836,13 +896,17 @@ function actualizarHeader() {
   const u = getUsuario();
   const n = u.nombre || 'Usuario';
   document.getElementById('hGreet').textContent  = saludar();
-  document.getElementById('hNombre').textContent = n;
+  let nombreDisplay = n;
+  if (postgresOK) {
+    nombreDisplay += ' 🗄️';
+  }
+  document.getElementById('hNombre').textContent = nombreDisplay;
   const ini = n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2) || 'U';
   document.getElementById('hAvatar').textContent = ini;
 }
 
 // ===== NAVEGACIÓN =====
-function ir(pantalla, btn) {
+async function ir(pantalla, btn) {
   pantallaActual = pantalla;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('s-' + pantalla).classList.add('active');
@@ -866,16 +930,16 @@ function ir(pantalla, btn) {
     hideAdMobBanner();
   }
 
-  if (pantalla === 'inicio')      renderInicio();
-  if (pantalla === 'gastos')      renderGastos();
-  if (pantalla === 'vencimientos') renderVencimientos();
+  if (pantalla === 'inicio')      await renderInicio();
+  if (pantalla === 'gastos')      await renderGastos();
+  if (pantalla === 'vencimientos') await renderVencimientos();
   if (pantalla === 'ia')          renderIA();
   if (pantalla === 'ajustes')     renderAjustes();
 }
 
 // ===== INICIO =====
-function renderInicio() {
-  const data = getData();
+async function renderInicio() {
+  const data = await getData();
   const gastosMes   = data.filter(g => g.tipo === 'gasto'      && g.fecha?.startsWith(mes()));
   const ingresosMes = data.filter(g => g.tipo === 'ingreso'    && g.fecha?.startsWith(mes()));
   const vencPend    = data.filter(g => g.tipo === 'vencimiento' && !g.pagado);
@@ -907,7 +971,7 @@ function renderInicio() {
   document.getElementById('pillVenc').textContent = `${vencProx} próx.`;
 
   dibujarChart(gastosMes);
-  renderRecientes();
+  await renderRecientes();
 }
 
 function dibujarChart(gastos) {
@@ -963,8 +1027,8 @@ function dibujarChart(gastos) {
   });
 }
 
-function renderRecientes() {
-  const items = getData()
+async function renderRecientes() {
+  const items = await getData()
     .filter(g => g.tipo !== 'vencimiento')
     .sort((a,b) => new Date(b.fecha)-new Date(a.fecha))
     .slice(0,5);
@@ -989,9 +1053,9 @@ function renderRecientes() {
 }
 
 // ===== GASTOS =====
-function renderGastos() {
+async function renderGastos() {
   const srch = (document.getElementById('searchGastos').value || '').toLowerCase();
-  const items = getData()
+  const items = await getData()
     .filter(g => g.tipo !== 'vencimiento')
     .filter(g => filtCat==='todas' || g.categoria===filtCat)
     .filter(g => filtMon==='todas' || g.moneda===filtMon)
@@ -1051,9 +1115,10 @@ function activarSwipe(id) {
   });
 }
 
-function eliminar(id) {
-  setData(getData().filter(g => g.id !== id));
-  renderGastos();
+async function eliminar(id) {
+  const data = await getData();
+  await setData(data.filter(g => g.id !== id));
+  await renderGastos();
   toast('Eliminado');
 }
 
@@ -1068,11 +1133,11 @@ document.getElementById('fMon').addEventListener('click', e => {
   document.querySelectorAll('#fMon .chip').forEach(c=>c.classList.remove('active'));
   b.classList.add('active'); filtMon = b.dataset.v; renderGastos();
 });
-document.getElementById('searchGastos').addEventListener('input', renderGastos);
+document.getElementById('searchGastos').addEventListener('input', () => renderGastos());
 
 // ===== VENCIMIENTOS =====
-function renderVencimientos() {
-  const items = getData()
+async function renderVencimientos() {
+  const items = await getData()
     .filter(g => g.tipo==='vencimiento' && !g.pagado)
     .sort((a,b) => new Date(a.fechaVenc) - new Date(b.fechaVenc));
 
@@ -1106,9 +1171,10 @@ function renderVencimientos() {
   }).join('');
 }
 
-function marcarPagado(id) {
-  setData(getData().map(g => g.id===id ? {...g, pagado:true} : g));
-  renderVencimientos();
+async function marcarPagado(id) {
+  const data = await getData();
+  await setData(data.map(g => g.id===id ? {...g, pagado:true} : g));
+  await renderVencimientos();
   toast('Marcado como pagado');
 }
 
@@ -1206,9 +1272,9 @@ function mostrarResultadosIA() {
     </div>`).join('');
 }
 
-function importarIAGastos() {
+async function importarIAGastos() {
   if (!gastosDetectados.length) return;
-  const data = getData();
+  const data = await getData();
   gastosDetectados.forEach(g => {
     data.push({
       id: uid(), tipo:'gasto',
@@ -1220,7 +1286,7 @@ function importarIAGastos() {
       pagado: false
     });
   });
-  setData(data);
+  await setData(data);
   const n = gastosDetectados.length;
   gastosDetectados = [];
   document.getElementById('iaResultSection').style.display = 'none';
@@ -1240,7 +1306,8 @@ async function enviarChat() {
   chatHistory.push({ role:'user', content:msg });
 
   // Contexto con los gastos del usuario para que la IA pueda responder preguntas
-  const gastosMes = getData()
+  const allData = await getData();
+  const gastosMes = allData
     .filter(g => g.tipo!=='vencimiento' && g.fecha?.startsWith(mes()))
     .map(g => ({ desc:g.descripcion, cat:g.categoria, monto:g.monto, moneda:g.moneda, tipo:g.tipo, fecha:g.fecha }));
 
@@ -1284,16 +1351,44 @@ function renderAjustes() {
   document.getElementById('sNombre').value = u.nombre || '';
   document.getElementById('sLimite').value = c.limite  || '';
   document.getElementById('sApiKey').value = c.apiKey  || '';
+  document.getElementById('sPgApiUrl').value = PG_API_URL;
+
+  // Mostrar estado de PostgreSQL
+  const statusEl = document.getElementById('postgresStatus');
+  if (postgresOK) {
+    statusEl.style.display = 'block';
+    statusEl.style.background = 'rgba(64,185,123,0.13)';
+    statusEl.style.border = '1px solid #40b97b';
+    statusEl.style.color = '#40b97b';
+    statusEl.textContent = '✓ Conectado a PostgreSQL';
+  } else {
+    statusEl.style.display = 'block';
+    statusEl.style.background = 'rgba(229,62,62,0.12)';
+    statusEl.style.border = '1px solid rgba(229,62,62,0.3)';
+    statusEl.style.color = '#e53e3e';
+    statusEl.textContent = '✗ Usando localStorage (sin PostgreSQL)';
+  }
 }
 
-function guardarAjustes() {
+async function guardarAjustes() {
+  const pgUrl = document.getElementById('sPgApiUrl').value.trim();
+
   setUsuario({ nombre: document.getElementById('sNombre').value.trim() });
   setCfg({
     limite: +document.getElementById('sLimite').value || 50000,
     apiKey:  document.getElementById('sApiKey').value.trim()
   });
+
+  // Guardar config de PostgreSQL
+  if (pgUrl) {
+    localStorage.setItem('pg_api_url', pgUrl);
+    // Reintentar conexión
+    await initPostgres();
+  }
+
   actualizarHeader();
-  toast('Ajustes guardados');
+  renderAjustes();
+  toast('Ajustes guardados' + (postgresOK ? ' ✓' : ''));
 }
 
 function exportarJSON() {
@@ -1349,7 +1444,7 @@ function setMon(m, btn) {
   if(btn) btn.classList.add('on');
 }
 
-function guardarItem() {
+async function guardarItem() {
   const desc  = document.getElementById('mDesc').value.trim();
   const monto = +document.getElementById('mMonto').value;
   const fecha = document.getElementById('mFecha').value;
@@ -1371,13 +1466,15 @@ function guardarItem() {
     pagado: false
   };
 
-  const data = getData(); data.push(item); setData(data);
+  const data = await getData();
+  data.push(item);
+  await setData(data);
   cerrarModal();
   toast('Guardado correctamente');
 
-  if (pantallaActual==='inicio')       renderInicio();
-  if (pantallaActual==='gastos')       renderGastos();
-  if (pantallaActual==='vencimientos') renderVencimientos();
+  if (pantallaActual==='inicio')       await renderInicio();
+  if (pantallaActual==='gastos')       await renderGastos();
+  if (pantallaActual==='vencimientos') await renderVencimientos();
 }
 
 // ===== API ANTHROPIC =====
@@ -1500,8 +1597,9 @@ async function hideAdMobBanner() {
 
 // ===== ARRANQUE =====
 async function init() {
+  await initPostgres();
   actualizarHeader();
-  renderInicio();
+  await renderInicio();
   document.getElementById('admobSpace').style.display = 'flex'; // espacio en inicio
   document.getElementById('mainContent').classList.add('with-banner');
   document.getElementById('fabBtn').classList.add('with-banner');

@@ -1,0 +1,402 @@
+{
+  "name": "📩 Instagram DM Bot - ARIA V2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-dm-webhook-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ig-wh-post",
+      "name": "📥 Instagram Webhook",
+      "position": [-1008, 192],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "ig-webhook-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\nlet senderPsid = '', messageText = '', messageId = '';\n\ntry {\n  const entry = body.entry?.[0] || {};\n  \n  // CASO 1: DM\n  if (entry.messaging?.[0]) {\n    const msg = entry.messaging[0];\n    if (msg.message?.is_echo || msg.delivery || msg.read) {\n      return [{ json: { skip: true, reason: 'echo' } }];\n    }\n    senderPsid = msg.sender?.id || '';\n    messageText = msg.message?.text || '';\n    messageId = msg.message?.mid || '';\n  }\n  // CASO 2: Comentario\n  else if (entry.changes?.[0]) {\n    const value = entry.changes[0].value || {};\n    senderPsid = value.from?.id || '';\n    messageText = value.text || '';\n    messageId = value.id || '';\n  }\n} catch (e) {}\n\nif (!senderPsid || !messageText) {\n  return [{ json: { skip: true, reason: 'no_valid', debug_body: body } }];\n}\n\nconst source = body.entry?.[0]?.changes?.[0] ? 'instagram_comment' : 'instagram_dm';\nreturn [{ json: { skip: false, sender_psid: senderPsid, message_text: messageText, message_id: messageId, source: source } }];\n"
+      },
+      "id": "ig-extract",
+      "name": "🔍 Extraer Mensaje",
+      "position": [-784, 192],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ig-valid",
+      "name": "⚡ ¿Mensaje Válido?",
+      "position": [-560, 192],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"ignored\"}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "ig-ignore",
+      "name": "⏭️ Ignorar (200 OK)",
+      "position": [-336, 16],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "source-dm",
+              "leftValue": "={{ $json.source }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "instagram_dm"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ig-desvio",
+      "name": "🚦 ¿DM o Comentario?",
+      "position": [-336, 288],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message_text }}",
+        "options": {
+          "systemMessage": "Eres ARIA, Asistente de Automatizame.uy. Trabajas con Sebastian Agradeno, fundador.\nRespondes DMs de Instagram de forma natural y profesional.\n\nREGLAS:\n1. NUNCA reveles que eres IA, bot o similar.\n2. Si preguntan si eres bot: Soy parte del equipo de Automatizame. En que te puedo ayudar?\n3. NUNCA des precios. Di: Cada proyecto es unico, Seba arma propuestas en una llamada de 30 min.\n4. NUNCA inventes datos.\n5. NO des el link de Calendly sin entender el problema primero.\n\nDATOS:\nWeb: https://automatizameuy.com\nWhatsApp: https://wa.me/59897595464\nCalendly: https://calendly.com/sebaagradeno/30min\nIG: @automatizame_uy\nUbicacion: Uruguay, atendemos LATAM y Espana\n\nSERVICIOS:\n- Automatizacion con n8n auto-hospedado\n- CRMs a medida\n- Agentes de IA para ventas y atencion\n- Contenidos con IA\n- Infraestructura Neuronal Integral\n\nESTRATEGIA:\n1. Saluda calido\n2. Pregunta sobre su negocio y problema y segun el problema cuentale que servicio le podria servir\n3. Cuantifica lo que pierden\n4. Describe brevemente la solucion\n5. Si quieren hablar o agendar, ofrece WhatsApp (https://wa.me/59897595464) o Calendly\n\nESTILO: Cercano, tuteo, mensajes CORTOS (3-4 lineas max), 1-2 emojis, solo texto plano."
+        }
+      },
+      "id": "ig-aria",
+      "name": "🧠 ARIA - Ventas IA",
+      "position": [-112, 16],
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": { "maxTokensToSample": 400, "temperature": 0.6 }
+      },
+      "id": "ig-groq",
+      "name": "Groq (Llama-3.3 70B)",
+      "position": [-112, 240],
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "credentials": { "groqApi": { "id": "qr6uCVFF8OqWm4dd", "name": "Groq account 2" } }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('🔍 Extraer Mensaje').item.json.sender_psid }}",
+        "contextWindowLength": 20
+      },
+      "id": "ig-memory",
+      "name": "💾 Memoria por Usuario",
+      "position": [32, 240],
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsCode": "const senderPsid = $('🔍 Extraer Mensaje').first().json.sender_psid;\nconst aiResponse = $input.first().json.output || $input.first().json.text || 'Disculpa, hubo un problema.';\nlet cleanResponse = aiResponse.replace(/^(assistant|aria):\\s*/gi, '').trim();\nif (cleanResponse.length > 1000) cleanResponse = cleanResponse.substring(0, 997) + '...';\nconst msgLower = ($('🔍 Extraer Mensaje').first().json.message_text || '').toLowerCase();\nlet temperature = 'frio';\nif (msgLower.includes('agendar') || msgLower.includes('reunion')) temperature = 'listo';\nelse if (msgLower.includes('precio') || msgLower.includes('presupuesto')) temperature = 'caliente';\nelse if (msgLower.includes('necesito') || msgLower.includes('ayuda')) temperature = 'tibio';\nreturn [{ json: { sender_psid: senderPsid, response_text: cleanResponse, original_message: $('🔍 Extraer Mensaje').first().json.message_text, temperature: temperature, is_hot: (temperature === 'caliente' || temperature === 'listo'), timestamp: new Date().toISOString() } }];"
+      },
+      "id": "ig-process",
+      "name": "⚙️ Procesar + Clasificar",
+      "position": [240, 128],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v21.0/me/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer IGAF2ZADZAybWgdBZAGJseTk2Vl9OcGRPYTRzMlVhUHBSeUlFbkMtb3otUmgzY2tlWUtpQzRjR01VWXBmaU5FTkJCenQ3LTU1R3pNN2NZAQjk4b3R1OVMzMjdZAcDdnNy1wZA2FxQjFpVjB6MmVBczllOGU4bVYxR0phWklpNEdSc3EzVQZDZD" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": { \"id\": \"{{ $json.sender_psid }}\" },\n  \"message\": { \"text\": {{ JSON.stringify($json.response_text) }} }\n}",
+        "options": {}
+      },
+      "id": "ig-send",
+      "name": "📤 Responder DM Instagram",
+      "position": [464, 128],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v21.0/me/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer IGAF2ZADZAybWgdBZAGJseTk2Vl9OcGRPYTRzMlVhUHBSeUlFbkMtb3otUmgzY2tlWUtpQzRjR01VWXBmaU5FTkJCenQ3LTU1R3pNN2NZAQjk4b3R1OVMzMjdZAcDdnNy1wZA2FxQjFpVjB6MmVBczllOGU4bVYxR0phWklpNEdSc3EzVQZDZD" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\":{\"id\":\"{{ $json.sender_psid }}\"},\n  \"message\":{\n    \"attachment\":{\n      \"type\":\"template\",\n      \"payload\":{\n        \"template_type\":\"generic\",\n        \"elements\":[{\n          \"title\":\"Te dejo los accesos directos\",\n          \"subtitle\":\"Hace tap para ir directo\",\n          \"buttons\":[\n            {\"type\":\"web_url\",\"url\":\"https://automatizameuy.com\",\"title\":\"Nuestra Web\"},\n            {\"type\":\"web_url\",\"url\":\"https://wa.me/59897595464?text=Hola%20Automatizame%2C%20quiero%20info.\",\"title\":\"WhatsApp\"},\n            {\"type\":\"web_url\",\"url\":\"https://calendly.com/sebaagradeno/30min\",\"title\":\"Agendar con Seba\"}\n          ]\n        }]\n      }\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "ig-botonera-dm",
+      "name": "📤 Botonera ARIA",
+      "position": [688, 128],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO ig_leads (instagram_psid, last_message, ai_response, temperature, source, created_at, updated_at)\nVALUES (\n  '{{ $json.sender_psid }}',\n  '{{ $json.original_message }}',\n  '{{ $json.response_text }}',\n  '{{ $json.temperature }}',\n  'instagram_dm', NOW(), NOW()\n)\nON CONFLICT (instagram_psid)\nDO UPDATE SET\n  last_message = EXCLUDED.last_message,\n  ai_response = EXCLUDED.ai_response,\n  temperature = EXCLUDED.temperature,\n  conversation_count = ig_leads.conversation_count + 1,\n  updated_at = NOW();",
+        "options": {}
+      },
+      "id": "ig-save",
+      "name": "💾 Guardar/Actualizar Lead",
+      "position": [912, 128],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "credentials": { "postgres": { "id": "rfMpsEPaVls9DDGX", "name": "Postgres account 2" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "hot-check",
+              "leftValue": "={{ $json.is_hot }}",
+              "operator": { "operation": "equals", "type": "boolean" },
+              "rightValue": true
+            }
+          ],
+          "options": {}
+        },
+        "options": {}
+      },
+      "id": "ig-hot",
+      "name": "🔥 ¿Lead Caliente?",
+      "position": [1136, 128],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "1301491979",
+        "text": "=LEAD CALIENTE IG!\nDijo: {{ $json.original_message }}\nARIA: {{ $json.response_text.substring(0, 200) }}\nTemp: {{ $json.temperature }}",
+        "additionalFields": {}
+      },
+      "id": "ig-telegram",
+      "name": "📱 Alerta Telegram",
+      "position": [1344, 112],
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "webhookId": "111a89ea-2346-43c7-b046-639331eca1c9",
+      "credentials": { "telegramApi": { "id": "EMkuSuIvQQU1R3I0", "name": "automatizameuy" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"ok\"}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "ig-respond-ok",
+      "name": "✅ Responder 200 OK",
+      "position": [1232, 384],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "path": "instagram-dm-webhook-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-1008, -208],
+      "id": "96206f5d-fb2f-4ed9-a64f-49c7456f3d8e",
+      "name": "Webhook",
+      "webhookId": "b02f6557-8f4e-438a-92a0-6390a67cfac7"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query[\"hub.challenge\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [-784, -208],
+      "id": "dc48e8c9-1a7a-458b-98a7-c78615f881b4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v21.0/{{ $('🔍 Extraer Mensaje').item.json.message_id }}/replies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer IGAF2ZADZAybWgdBZAGJseTk2Vl9OcGRPYTRzMlVhUHBSeUlFbkMtb3otUmgzY2tlWUtpQzRjR01VWXBmaU5FTkJCenQ3LTU1R3pNN2NZAQjk4b3R1OVMzMjdZAcDdnNy1wZA2FxQjFpVjB6MmVBczllOGU4bVYxR0phWklpNEdSc3EzVQZDZD" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"message\": \"¡Hola! ✨ Te acabo de enviar la info por DM 😉\" }",
+        "options": {}
+      },
+      "id": "ig-comment-reply",
+      "name": "🗣️ Comentar Público",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [240, 448]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v21.0/me/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer IGAF2ZADZAybWgdBZAGJseTk2Vl9OcGRPYTRzMlVhUHBSeUlFbkMtb3otUmgzY2tlWUtpQzRjR01VWXBmaU5FTkJCenQ3LTU1R3pNN2NZAQjk4b3R1OVMzMjdZAcDdnNy1wZA2FxQjFpVjB6MmVBczllOGU4bVYxR0phWklpNEdSc3EzVQZDZD" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\"id\": \"{{ $('🔍 Extraer Mensaje').item.json.sender_psid }}\"},\n  \"message\": {\n    \"attachment\": {\n      \"type\": \"template\",\n      \"payload\": {\n        \"template_type\": \"generic\",\n        \"elements\": [{\n          \"title\": \"¡Hola! 🚀 Estás a un paso de escalar tu negocio.\",\n          \"subtitle\": \"¿Cómo prefieres avanzar? 👇\",\n          \"buttons\": [\n            {\"type\": \"web_url\", \"url\": \"https://automatizameuy.com\", \"title\": \"🌐 Ver Web\"},\n            {\"type\": \"web_url\", \"url\": \"https://wa.me/59897595464?text=Hola%20Automatizame\", \"title\": \"💬 WhatsApp\"}\n          ]\n        }]\n      }\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "ig-comment-botonera",
+      "name": "📤 Botonera Comentario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [464, 448]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"ok\"}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "ig-comment-ok",
+      "name": "✅ OK Comentarios",
+      "position": [688, 448],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "📥 Instagram Webhook": {
+      "main": [[{ "node": "🔍 Extraer Mensaje", "type": "main", "index": 0 }]]
+    },
+    "🔍 Extraer Mensaje": {
+      "main": [[{ "node": "⚡ ¿Mensaje Válido?", "type": "main", "index": 0 }]]
+    },
+    "⚡ ¿Mensaje Válido?": {
+      "main": [
+        [{ "node": "🚦 ¿DM o Comentario?", "type": "main", "index": 0 }],
+        [{ "node": "⏭️ Ignorar (200 OK)", "type": "main", "index": 0 }]
+      ]
+    },
+    "🚦 ¿DM o Comentario?": {
+      "main": [
+        [{ "node": "🧠 ARIA - Ventas IA", "type": "main", "index": 0 }],
+        [{ "node": "🗣️ Comentar Público", "type": "main", "index": 0 }]
+      ]
+    },
+    "🧠 ARIA - Ventas IA": {
+      "main": [[{ "node": "⚙️ Procesar + Clasificar", "type": "main", "index": 0 }]]
+    },
+    "Groq (Llama-3.3 70B)": {
+      "ai_languageModel": [[{ "node": "🧠 ARIA - Ventas IA", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "💾 Memoria por Usuario": {
+      "ai_memory": [[{ "node": "🧠 ARIA - Ventas IA", "type": "ai_memory", "index": 0 }]]
+    },
+    "⚙️ Procesar + Clasificar": {
+      "main": [[{ "node": "📤 Responder DM Instagram", "type": "main", "index": 0 }]]
+    },
+    "📤 Responder DM Instagram": {
+      "main": [[{ "node": "📤 Botonera ARIA", "type": "main", "index": 0 }]]
+    },
+    "📤 Botonera ARIA": {
+      "main": [[{ "node": "💾 Guardar/Actualizar Lead", "type": "main", "index": 0 }]]
+    },
+    "💾 Guardar/Actualizar Lead": {
+      "main": [[{ "node": "🔥 ¿Lead Caliente?", "type": "main", "index": 0 }]]
+    },
+    "🔥 ¿Lead Caliente?": {
+      "main": [
+        [{ "node": "📱 Alerta Telegram", "type": "main", "index": 0 }],
+        [{ "node": "✅ Responder 200 OK", "type": "main", "index": 0 }]
+      ]
+    },
+    "📱 Alerta Telegram": {
+      "main": [[{ "node": "✅ Responder 200 OK", "type": "main", "index": 0 }]]
+    },
+    "Webhook": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    },
+    "🗣️ Comentar Público": {
+      "main": [[{ "node": "📤 Botonera Comentario", "type": "main", "index": 0 }]]
+    },
+    "📤 Botonera Comentario": {
+      "main": [[{ "node": "✅ OK Comentarios", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 3600,
+    "timezone": "UTC",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1"
+  }
+}

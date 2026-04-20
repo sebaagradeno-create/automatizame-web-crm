@@ -1,0 +1,121 @@
+{
+  "name": "🎬 Fábrica de Reels — A/B Testing Automatizado (Doglio System)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"triggerAtHour": 8}]
+        }
+      },
+      "id": "reels-cron",
+      "name": "⏰ Cron Diario 8AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT angulo, variante, guion_base, hook, cta, veces_usado, mejor_engagement FROM reels_ab_testing WHERE estado = 'pendiente' ORDER BY prioridad ASC LIMIT 1;",
+        "options": {}
+      },
+      "id": "reels-get",
+      "name": "📋 Obtener Próximo Reel",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "rfMpsEPaVls9DDGX",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.8,
+          "maxOutputTokens": 500
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Eres un guionista experto en Reels de Instagram para una agencia de automatización con IA en Uruguay.\n\nREGLAS:\n- Español rioplatense natural (nada de jerga técnica)\n- Máximo 60 segundos hablados\n- Estructura OATF: Resultado Soñado → Percepción → Esfuerzo → Tiempo\n- SIEMPRE terminar con CTA: 'Comentá AUTOMATIZAME'\n- Tono conversacional como si hablaras con un amigo\n\nVARIACIÓN: Cambia SOLO lo indicado en la instrucción. El resto del guion debe ser igual o muy similar a la base.\nEsto es un A/B test — necesitamos aislar UNA variable por vez."
+            },
+            {
+              "role": "user",
+              "content": "=ÁNGULO: {{ $json.angulo }}\nGUIÓN BASE: {{ $json.guion_base }}\nVARIANTE A CAMBIAR: {{ $json.variante }}\nHOOK ACTUAL: {{ $json.hook }}\nCTA ACTUAL: {{ $json.cta }}\n\nGenera una nueva versión del guion cambiando SOLO el elemento indicado en VARIANTE. Devuelve el guion completo listo para pegar en HeyGen."
+            }
+          ]
+        }
+      },
+      "id": "reels-gemini",
+      "name": "🧠 Gemini — Variación del Guion",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "22UGmSF6LaRDzIfu",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5748737739",
+        "text": "=🎬 *REEL DIARIO — A/B TEST*\n\n📐 *Ángulo:* {{ $('📋 Obtener Próximo Reel').item.json.angulo }}\n🔄 *Variable cambiada:* {{ $('📋 Obtener Próximo Reel').item.json.variante }}\n📝 *Guion generado:*\n\n{{ $json.text }}\n\n---\n✅ Responde *APROBAR* para generar en HeyGen\n✏️ Responde *EDITAR* + tu corrección\n⏭️ Responde *SKIP* para saltar al siguiente",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "reels-tg",
+      "name": "📱 Enviar para Aprobación",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "vyClPi8ITzGB8wPW",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE reels_ab_testing SET estado = 'enviado', guion_variacion = '{{ $('🧠 Gemini — Variación del Guion').item.json.text.replace(/'/g, \"''\") }}', fecha_generado = NOW(), veces_usado = veces_usado + 1 WHERE angulo = '{{ $('📋 Obtener Próximo Reel').item.json.angulo }}' AND variante = '{{ $('📋 Obtener Próximo Reel').item.json.variante }}';",
+        "options": {}
+      },
+      "id": "reels-update",
+      "name": "💾 Guardar en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "rfMpsEPaVls9DDGX",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "⏰ Cron Diario 8AM": {
+      "main": [[{"node": "📋 Obtener Próximo Reel", "type": "main", "index": 0}]]
+    },
+    "📋 Obtener Próximo Reel": {
+      "main": [[{"node": "🧠 Gemini — Variación del Guion", "type": "main", "index": 0}]]
+    },
+    "🧠 Gemini — Variación del Guion": {
+      "main": [[
+        {"node": "📱 Enviar para Aprobación", "type": "main", "index": 0},
+        {"node": "💾 Guardar en DB", "type": "main", "index": 0}
+      ]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null
+}

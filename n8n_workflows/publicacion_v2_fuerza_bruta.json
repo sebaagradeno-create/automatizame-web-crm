@@ -1,0 +1,291 @@
+{
+  "name": "🎬 IA Viral MODO DIOS (Base v2)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "6a772f28-8b17-4dd3-b77a-c0f3c782718b",
+      "name": "Cada 4 Horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Genera el post de alto impacto para hoy.\n[CAPTION]\n(texto)\n[IMAGE_PROMPT]\n(prompt en ingles)",
+        "options": {
+          "systemMessage": "Eres el Director Creativo de Automatizame.uy"
+        }
+      },
+      "id": "43778b87-f06a-4aee-ad37-8fc483ec60e0",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.output.split('[IMAGE_PROMPT]')[1].trim() }}",
+        "options": {}
+      },
+      "id": "9ec0243f-4f1e-497e-ae52-42577eebc2d0",
+      "name": "Generate an image",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        300
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GjNcpfBPkLl05TYn",
+          "name": "Google Gemini(PaLM) Api account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $now.format('yyyy-MM-dd_HH-mm') }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1KMCXu1SjTL0d17o6U6Rydikn3YkQWlrS",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "9f8fa414-0c01-4d4f-bff8-0948995eb7a2",
+      "name": "Upload Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        860,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kAWoxsZ2lzLkD2It",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "additionalFieldsFile": {}
+      },
+      "id": "344bdb46-53c4-45f1-8ce6-66662e2b01dc",
+      "name": "Upload Cloudinary",
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        300
+      ],
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "2O1MemHlGqL0VBIA",
+          "name": "Cloudinary account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nreturn [{ json: { ...item, caption_final: $node[\"AI Agent\"].json.output.split('[CAPTION]')[1].split('[IMAGE_PROMPT]')[0].trim() } }];"
+      },
+      "id": "node-code-v2",
+      "name": "Build State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1301491979",
+        "photo": "={{ $json.secure_url }}",
+        "caption": "=🤖 POST LISTO.\n\n📝 TEXTO:\n{{ $json.caption_final }}\n\nTienes 5 min para cancelar.",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "inline_keyboard": [
+            [
+              {
+                "text": "❌ Cancelar",
+                "url": "={{ $execution.resumeUrl }}?action=no"
+              }
+            ]
+          ]
+        }
+      },
+      "id": "node-telegram-v2",
+      "name": "Aviso Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": 5,
+        "unit": "minutes"
+      },
+      "id": "node-wait-v2",
+      "name": "Espera 5 Min",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "node": "17841440704562352",
+        "imageUrl": "={{ $node[\"Build State\"].json.secure_url }}",
+        "caption": "={{ $node[\"Build State\"].json.caption_final }}",
+        "additionalFields": {}
+      },
+      "id": "342c7af4-5d50-479c-a604-fb85e75ec9f0",
+      "name": "Instagram",
+      "type": "@mookielianhd/n8n-nodes-instagram.instagram",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        300
+      ],
+      "credentials": {
+        "instagramApi": {
+          "id": "isXIWWDyIfPfKX0w",
+          "name": "Instagram account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 4 Horas": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Upload Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Drive": {
+      "main": [
+        [
+          {
+            "node": "Upload Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Build State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build State": {
+      "main": [
+        [
+          {
+            "node": "Aviso Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aviso Telegram": {
+      "main": [
+        [
+          {
+            "node": "Espera 5 Min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera 5 Min": {
+      "main": [
+        [
+          {
+            "node": "Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

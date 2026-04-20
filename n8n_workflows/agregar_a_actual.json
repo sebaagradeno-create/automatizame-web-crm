@@ -1,0 +1,99 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "name": "={{ $now.format('yyyy-MM-dd_HH-mm') }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1KMCXu1SjTL0d17o6U6Rydikn3YkQWlrS",
+          "mode": "list"
+        }
+      },
+      "name": "Guardar en Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        750,
+        500
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kAWoxsZ2lzLkD2It",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1301491979",
+        "photo": "={{ $json.secure_url }}",
+        "caption": "=🤖 POST GUARDADO.\n\nPuedes publicarlo ahora o esperar 5 min.\n\n📝 TEXTO:\n{{ $json.caption_final }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "inline_keyboard": [
+            [
+              {
+                "text": "✅ Sí a todo",
+                "url": "={{ $execution.resumeUrl }}?action=si"
+              },
+              {
+                "text": "❌ Cancelar",
+                "url": "={{ $execution.resumeUrl }}?action=no"
+              }
+            ],
+            [
+              {
+                "text": "📝 Mal texto",
+                "url": "={{ $execution.resumeUrl }}?action=text"
+              },
+              {
+                "text": "🖼️ Mala foto",
+                "url": "={{ $execution.resumeUrl }}?action=photo"
+              }
+            ]
+          ]
+        }
+      },
+      "name": "Telegram Pro",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1350,
+        150
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.query.action || 'si' }}",
+        "rules": {
+          "rules": [
+            { "value2": "si" },
+            { "value2": "no", "output": 1 },
+            { "value2": "text", "output": 2 },
+            { "value2": "photo", "output": 3 }
+          ]
+        }
+      },
+      "name": "Decision Manager",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        1850,
+        450
+      ]
+    }
+  ]
+}

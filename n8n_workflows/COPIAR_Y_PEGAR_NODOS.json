@@ -1,0 +1,155 @@
+{
+  "meta": {
+    "instanceId": "9ec0243f-4f1e-497e-ae52-42577eebc2d0"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1301491979",
+        "photo": "={{ $json.secure_url }}",
+        "caption": "=🤖 REVISA EL POST.\n\n📝 TEXTO:\n{{ $json.caption_final }}\n\nSi no tocas nada, se publica solo en 5 min.",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "inline_keyboard": [
+            [
+              {
+                "text": "✅ Publicar Ya",
+                "url": "={{$execution.resumeUrl}}?action=si"
+              },
+              {
+                "text": "❌ Abortar",
+                "url": "={{$execution.resumeUrl}}?action=no"
+              }
+            ],
+            [
+              {
+                "text": "📝 Reescribir Texto",
+                "url": "={{$execution.resumeUrl}}?action=text"
+              },
+              {
+                "text": "🖼️ Nueva Foto",
+                "url": "={{$execution.resumeUrl}}?action=photo"
+              }
+            ]
+          ]
+        }
+      },
+      "id": "e9324706-e78d-4e92-afcd-9195b0cb5499",
+      "name": "Botones Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1300,
+        150
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "EMkuSuIvQQU1R3I0",
+          "name": "asistente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": 5,
+        "unit": "minutes"
+      },
+      "id": "c1f7a4da-dcc8-4eac-b7d6-3e0e7a2b0e6c",
+      "name": "Esperar Respuesta",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.query.action || 'si' }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "si"
+            },
+            {
+              "value2": "no",
+              "output": 1
+            },
+            {
+              "value2": "text",
+              "output": 2
+            },
+            {
+              "value2": "photo",
+              "output": 3
+            }
+          ]
+        }
+      },
+      "id": "a9a3b6d2-6db7-4971-9c60-49660da94e9f",
+      "name": "Switch Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{ $now.format('yyyy-MM-dd_HH-mm') }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1KMCXu1SjTL0d17o6U6Rydikn3YkQWlrS",
+          "mode": "list"
+        }
+      },
+      "id": "d0f81d8d-dc9d-42ac-9c76-577777174db9",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        900,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kAWoxsZ2lzLkD2It",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Botones Telegram": {
+      "main": [
+        [
+          {
+            "node": "Esperar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Switch Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
