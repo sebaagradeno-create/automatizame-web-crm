@@ -28,7 +28,7 @@ jobs:
 
       - name: 📦 Instalar dependencias
         working-directory: scratch/cocodrilo
-        run: npm ci --legacy-peer-deps
+        run: rm -f package-lock.json && npm install --legacy-peer-deps
 
       - name: 🔄 Capacitor sync
         working-directory: scratch/cocodrilo
