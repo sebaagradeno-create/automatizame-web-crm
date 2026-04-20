@@ -3,7 +3,7 @@ name: Build Cocodrilo APK
 on:
   push:
     paths:
-      - 'scratch/cocodrilo/**'
+      - 'proyectos/App_Cocodrilo/**'
       - '.github/workflows/build-apk.yml'
     branches: [main]
 
@@ -27,15 +27,15 @@ jobs:
           distribution: 'temurin'
 
       - name: 📦 Instalar dependencias
-        working-directory: scratch/cocodrilo
+        working-directory: proyectos/App_Cocodrilo/cocodrilo
         run: npm install --legacy-peer-deps || (cat ~/.npm/_logs/*-debug.log && exit 1)
 
       - name: 🔄 Capacitor sync
-        working-directory: scratch/cocodrilo
+        working-directory: proyectos/App_Cocodrilo/cocodrilo
         run: npx cap sync
 
       - name: 🔨 Build APK (debug)
-        working-directory: scratch/cocodrilo/android
+        working-directory: proyectos/App_Cocodrilo/cocodrilo/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -44,11 +44,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: scratch/cocodrilo/android/app/build/outputs/apk/debug/app-debug.apk
+          path: proyectos/App_Cocodrilo/cocodrilo/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: 📤 Upload APK to Bridge
-        working-directory: scratch/cocodrilo/android/app/build/outputs/apk/debug
+        working-directory: proyectos/App_Cocodrilo/cocodrilo/android/app/build/outputs/apk/debug
         run: |
           curl -k -X POST -F "data=@app-debug.apk" https://n8n.automatizameuy.com/webhook/subir-archivo-aria
 
