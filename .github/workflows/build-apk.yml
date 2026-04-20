@@ -1,0 +1,51 @@
+name: Build Cocodrilo APK
+
+on:
+  push:
+    paths:
+      - 'scratch/cocodrilo/**'
+      - '.github/workflows/build-apk.yml'
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repo
+        uses: actions/checkout@v4
+
+      - name: 🔧 Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: ☕ Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 📦 npm install
+        working-directory: scratch/cocodrilo
+        run: npm install
+
+      - name: 🔄 Capacitor sync
+        working-directory: scratch/cocodrilo
+        run: npx cap sync
+
+      - name: 🔨 Build APK (debug)
+        working-directory: scratch/cocodrilo/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: 📤 Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: scratch/cocodrilo/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: 📱 Mensaje de éxito
+        run: echo "✅ APK compilado correctamente en Actions → Artifacts"
